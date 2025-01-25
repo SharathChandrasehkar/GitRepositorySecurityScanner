@@ -26,6 +26,23 @@ const Dashboard = () => {
     }
   };
 
+  const unwantedPatterns = [
+    '.env',
+    '.git/',
+    '.log',
+    'node_modules/',
+    '.vscode/',
+    '.idea/',
+    '.DS_Store',
+    'Thumbs.db',
+    '*.bak',
+    '*.swp',
+    '*.sqlite3',
+    '*.db',
+    'dist/',
+    'build/'
+  ];
+
   // Prepare data for the bar chart
   const prepareBarChartData = () => {
     if (!scanResults) return {};
@@ -170,7 +187,6 @@ const Dashboard = () => {
                 </Card.Body>
               </Card>
             </Col>
-
           </Row>
 
           
@@ -204,10 +220,15 @@ const Dashboard = () => {
               )}
             </Col>
             <Col md={6}>
-              {(scanResults.unwantedFiles?.length || 0) > 0 && (
+              {(scanResults.unwantedFiles?.length || 0) > 0 ? (
                 <Card className="mb-3">
                   <Card.Body>
                     <h5>Unwanted Files Found</h5>
+                    {/* Small font note in a single line under the header */}
+                    <small className="text-muted d-block mt-2">
+                      Note: The application checks for files matching these patterns: 
+                      {unwantedPatterns.join(', ')}.
+                    </small>
                     <ul>
                       {scanResults.unwantedFiles.map((file, index) => (
                         <li key={index}>{file}</li>
@@ -215,7 +236,20 @@ const Dashboard = () => {
                     </ul>
                   </Card.Body>
                 </Card>
+              ) : (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>No unwanted Files found</h5>
+                    {/* Small font note in a single line under the header */}
+                    <small className="text-muted d-block mt-2">
+                      Note: The application checks for files matching these patterns: 
+                      {unwantedPatterns.join(', ')}.
+                    </small>
+                  </Card.Body>
+                </Card>
               )}
+
+              
             </Col>
           </Row>
         </>
