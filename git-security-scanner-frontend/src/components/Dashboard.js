@@ -1,7 +1,6 @@
-// src/components/Dashboard.js
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Bar, Pie, Doughnut } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
 import { Button, Form, Alert, Spinner, Container, Row, Col, Card } from 'react-bootstrap';
 
@@ -77,34 +76,6 @@ const Dashboard = () => {
     };
   };
 
-  // Prepare data for the donut chart
-  const prepareDonutChartData = () => {
-    if (!scanResults) return {};
-
-    const totalIssues =
-      (scanResults.secrets?.length || 0) +
-      (scanResults.misconfigurations?.length || 0) +
-      (scanResults.vulnerabilities?.length || 0) +
-      (scanResults.unwantedFiles?.length || 0);
-
-    return {
-      labels: ['Secrets', 'Misconfigurations', 'Vulnerabilities', 'Unwanted Files'],
-      datasets: [
-        {
-          data: [
-            ((scanResults.secrets?.length || 0) / totalIssues) * 100,
-            ((scanResults.misconfigurations?.length || 0) / totalIssues) * 100,
-            ((scanResults.vulnerabilities?.length || 0) / totalIssues) * 100,
-            ((scanResults.unwantedFiles?.length || 0) / totalIssues) * 100,
-          ],
-          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-          borderColor: '#fff',  // Border color for the segments
-          hoverOffset: 4,
-        },
-      ],
-    };
-  };
-
   return (
     <Container className="mt-4">
       <h1 className="text-center">Git Repository Security Scanner</h1>
@@ -137,7 +108,7 @@ const Dashboard = () => {
       {scanResults && !loading && (
         <>
           <Row className="mt-5">
-            <Col md={6}>
+          <Col md={6}>
               <Card className="mb-4">
                 <Card.Body>
                   <h5>Count of Issues</h5>
@@ -170,6 +141,7 @@ const Dashboard = () => {
                         },
                       },
                     }}
+                    style={{ height: '300px', width: '100%' }} // Apply custom size
                   />
                 </Card.Body>
               </Card>
@@ -193,69 +165,15 @@ const Dashboard = () => {
                         },
                       },
                     }}
+                    style={{ height: '200px', width: '100%' }} // Apply custom size
                   />
                 </Card.Body>
               </Card>
             </Col>
+
           </Row>
 
-          <Row className="mt-5">
-            <Col md={6}>
-              <Card className="mb-4">
-                <Card.Body>
-                  <h5>Donut Chart of Issues</h5>
-                  <Doughnut
-                    data={prepareDonutChartData()}
-                    options={{
-                      responsive: true,
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: 'Donut Distribution of Issue Types',
-                        },
-                        legend: {
-                          position: 'top',
-                        },
-                      },
-                    }}
-                  />
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Results Listing */}
-          <Row>
-            <Col md={6}>
-              {(scanResults.secrets?.length || 0) > 0 && (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Secrets Found</h5>
-                    <ul>
-                      {scanResults.secrets.map((file, index) => (
-                        <li key={index}>{file}</li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
-            <Col md={6}>
-              {(scanResults.misconfigurations?.length || 0) > 0 && (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Misconfigurations Found</h5>
-                    <ul>
-                      {scanResults.misconfigurations.map((file, index) => (
-                        <li key={index}>{file}</li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
-          </Row>
-
+          
           <Row>
             <Col md={6}>
               {(scanResults.vulnerabilities?.length || 0) > 0 && (
@@ -264,7 +182,21 @@ const Dashboard = () => {
                     <h5>Vulnerabilities Found</h5>
                     <ul>
                       {scanResults.vulnerabilities.map((vuln, index) => (
-                        <li key={index}>{vuln}</li>
+                        <li key={index}>
+                          <strong>{vuln.name}</strong> (Severity: {vuln.severity})<br />
+                          Affected Version Range: {vuln.range}<br />
+                          Fix Available: {vuln.fixAvailable ? 'Yes' : 'No'}<br />
+                          Resolution Guidance: {vuln.resolutionGuidance}<br />
+                          {/* Display Git Blame if available */}
+                          {vuln.blame ? (
+                            <>
+                              <br />
+                              <strong>Git Blame:</strong> <pre>{vuln.blame}</pre>
+                            </>
+                          ) : (
+                            <span>No Git Blame available for this vulnerability.</span>
+                          )}
+                        </li>
                       ))}
                     </ul>
                   </Card.Body>
