@@ -109,67 +109,67 @@ const Dashboard = () => {
         <>
           <Row className="mt-5">
           <Col md={6}>
-            <Card className="mb-4">
-              <Card.Body>
-                <h5>Count of Issues</h5>
-                <Bar
-                  data={prepareBarChartData()}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: 'Count of Each Issue Type',
-                      },
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                    scales: {
-                      x: {
+              <Card className="mb-4">
+                <Card.Body>
+                  <h5>Count of Issues</h5>
+                  <Bar
+                    data={prepareBarChartData()}
+                    options={{
+                      responsive: true,
+                      plugins: {
                         title: {
                           display: true,
-                          text: 'Issue Types',
+                          text: 'Count of Each Issue Type',
+                        },
+                        legend: {
+                          position: 'top',
                         },
                       },
-                      y: {
-                        title: {
-                          display: true,
-                          text: 'Count',
+                      scales: {
+                        x: {
+                          title: {
+                            display: true,
+                            text: 'Issue Types',
+                          },
                         },
-                        min: 0,
+                        y: {
+                          title: {
+                            display: true,
+                            text: 'Count',
+                          },
+                          min: 0,
+                        },
                       },
-                    },
-                  }}
-                  style={{ height: '300px', width: '100%' }} // Apply custom size
-                />
-              </Card.Body>
-            </Card>
-          </Col>
+                    }}
+                    style={{ height: '300px', width: '100%' }} // Apply custom size
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
 
-          <Col md={6}>
-            <Card className="mb-4">
-              <Card.Body>
-                <h5>Distribution of Issues</h5>
-                <Pie
-                  data={preparePieChartData()}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: 'Distribution of Issue Types',
+            <Col md={6}>
+              <Card className="mb-4">
+                <Card.Body>
+                  <h5>Distribution of Issues</h5>
+                  <Pie
+                    data={preparePieChartData()}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Distribution of Issue Types',
+                        },
+                        legend: {
+                          position: 'top',
+                        },
                       },
-                      legend: {
-                        position: 'top',
-                      },
-                    },
-                  }}
-                  style={{ height: '200px', width: '100%' }} // Apply custom size
-                />
-              </Card.Body>
-            </Card>
-          </Col>
+                    }}
+                    style={{ height: '200px', width: '100%' }} // Apply custom size
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
 
           </Row>
 
