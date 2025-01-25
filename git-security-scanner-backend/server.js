@@ -6,6 +6,9 @@ const axios = require('axios');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const { promisify } = require('util');
+const { exec } = require('child_process');
+const execPromise = promisify(exec);
 
 const app = express();
 const git = simpleGit();
@@ -134,6 +137,9 @@ app.post('/scan', async (req, res) => {
         });
     };
 
+    const repoPath = path.join(__dirname, '/tmp/GitRepositorySecurityScanner/git-security-scanner-frontend'); // replace with the actual repo path
+    runNpmAudit('/tmp/GitRepositorySecurityScanner/git-security-scanner-frontend');
+
     // Example result structure
     const scanResults = {
       secrets: secretDataFound,
@@ -163,6 +169,19 @@ function deleteFolderRecursive(folderPath) {
     });
     fs.rmdirSync(folderPath);
     console.log('Folder and contents deleted successfully');
+  }
+}
+
+async function runNpmAudit(repoPath) {
+  try {
+    // Ensure you're in the correct directory before running npm audit
+    const result = await execPromise('npm audit --json', { cwd: repoPath });
+
+    // Print the audit results (this will print the JSON output)
+    //console.log('Audit Result:', result.stdout);
+    return result.stdout;
+  } catch (err) {
+    console.log('Error running npm audit:', err);
   }
 }
 
