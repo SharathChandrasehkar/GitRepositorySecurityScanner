@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const simpleGit = require('simple-git');
 const axios = require('axios');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const git = simpleGit();
@@ -24,6 +26,7 @@ app.post('/scan', async (req, res) => {
     // Clone the repository (you may want to clone it into a temporary directory)
     const repoName = repoUrl.split('/').pop().replace('.git', '');
     const clonePath = `/tmp/${repoName}`;
+    deleteFolderRecursive(clonePath);
     await git.clone(repoUrl, clonePath);
     
     // Security checks to perform (examples):
@@ -147,6 +150,21 @@ app.post('/scan', async (req, res) => {
     res.status(500).json({ error: 'Error during scanning' });
   }
 });
+
+function deleteFolderRecursive(folderPath) {
+  if (fs.existsSync(folderPath)) {
+    fs.readdirSync(folderPath).forEach((file, index) => {
+      const curPath = path.join(folderPath, file);
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(folderPath);
+    console.log('Folder and contents deleted successfully');
+  }
+}
 
 const port = 5000;
 app.listen(port, () => {

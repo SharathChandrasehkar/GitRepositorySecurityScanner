@@ -264,7 +264,11 @@ const Dashboard = () => {
                     <h5>Vulnerabilities Found</h5>
                     <ul>
                       {scanResults.vulnerabilities.map((vuln, index) => (
-                        <li key={index}>{vuln}</li>
+                        <li key={index}>
+                          <strong>{vuln.name}</strong> (Severity: {vuln.severity})<br />
+                          Affected Version Range: {vuln.range}<br />
+                          Fix Available: {vuln.fixAvailable ? 'Yes' : 'No'}<br />
+                        </li>
                       ))}
                     </ul>
                   </Card.Body>
