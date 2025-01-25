@@ -176,11 +176,13 @@ app.post('/scan', async (req, res) => {
 
 
 
-const checkVulnerabilities = async (cpath) => {
+/*
+--- working start ---
+const checkVulnerabilities = async (cpath1) => {
   try {
     // Wrap exec in a Promise to handle async behavior
     const stdout = await new Promise((resolve, reject) => {
-      exec('npm audit --json', { cwd: cpath }, (error, stdout, stderr) => {
+      exec('npm audit --json', { cwd: cpath1 }, (error, stdout, stderr) => {
         if (stderr) {
             console.error('stderr:', stderr);  // Log stderr for more details
         }
@@ -224,12 +226,155 @@ const checkVulnerabilities = async (cpath) => {
     throw err; // Rethrow the error to handle it in the calling function
   }
 };
+---working end---
+*/
+
+
+const getGitBlame = async (filePath, cpath2) => {
+  try {
+    // Running 'git blame' command for the specific file
+    const stdout = await new Promise((resolve, reject) => {
+      exec(`git blame ${filePath}`, { cwd: cpath2 }, (error, stdout, stderr) => {
+        if (stderr) {
+          reject(`Error in git blame: ${stderr}`);
+        }
+        if (error) {
+          reject(`git blame failed with error: ${error.message}`);
+        }
+        resolve(stdout); // Return the output of git blame
+      });
+    });
+    return stdout;
+  } catch (err) {
+    console.error('Error running git blame:', err);
+    throw err;
+  }
+};
+
+const getResolutionGuidance = (vulnerability) => {
+  // Example guidance based on severity
+  const severity = vulnerability.severity.toLowerCase();
+  let guidance = '';
+
+  switch (severity) {
+    case 'high':
+      guidance = 'This is a high-severity vulnerability. You should upgrade to the latest fixed version as soon as possible. Check the advisories for potential impact.';
+      break;
+    case 'moderate':
+      guidance = 'This is a moderate-severity vulnerability. If possible, upgrade to the recommended fixed version to mitigate risks.';
+      break;
+    case 'low':
+      guidance = 'This is a low-severity vulnerability. You can monitor the situation and consider upgrading when convenient.';
+      break;
+    default:
+      guidance = 'Please check the advisory for further details on resolving this issue.';
+      break;
+  }
+
+  // You can also include example code or further steps based on the vulnerability type
+  if (vulnerability.fixAvailable !== 'No fix available') {
+    guidance += `\nUpgrade ${vulnerability.name} to version ${vulnerability.fixAvailable} to resolve the issue.`;
+  } else {
+    guidance += '\nNo fix available yet. Stay updated with the project for any future patches.';
+  }
+
+  return guidance;
+};
+
+
+const checkVulnerabilities = async (cpath1) => {
+  try {
+    const stdout = await new Promise((resolve, reject) => {
+      exec('npm audit --json', { cwd: cpath1 }, (error, stdout, stderr) => {
+        if (stderr) {
+          console.error('stderr:', stderr);
+        }
+        if (error && !stderr) {
+          console.log('npm audit completed with exit code 1. Continuing to parse output...', stdout);
+        }
+        resolve(stdout);
+      });
+    });
+
+    // Parse npm audit results
+    let auditResults;
+    try {
+      auditResults = JSON.parse(stdout);
+    } catch (err) {
+      console.error('Error parsing npm audit results:', err);
+      throw new Error('Failed to parse npm audit output.');
+    }
+
+    const vulnerabilities = [];
+
+    if (auditResults && auditResults.vulnerabilities) {
+      for (const [pkgName, pkgInfo] of Object.entries(auditResults.vulnerabilities)) {
+        const vulnerability = {
+          name: pkgInfo.name,
+          severity: pkgInfo.severity,
+          range: pkgInfo.range,
+          fixAvailable: pkgInfo.fixAvailable ? pkgInfo.fixAvailable.version : 'No fix available',
+        };
+
+        // Add git blame information for the file(s) impacted
+        console.log('pkgInfo --',JSON.stringify(pkgInfo));
+        // Check if nodes are available and valid
+        if (pkgInfo.nodes && pkgInfo.nodes.length > 0) {
+          const filePath = pkgInfo.nodes[0].path;
+
+          // Log the filePath to debug
+          console.log('File path from npm audit:', filePath);
+
+          if (filePath) {
+            try {
+              const blame = await getGitBlame(filePath, cpath);
+              vulnerability.blame = blame;
+            } catch (blameError) {
+              console.error(`Error running git blame on file ${filePath}:`, blameError);
+              vulnerability.blameError = blameError.message;
+            }
+          } else {
+            console.warn(`No valid file path found for ${pkgInfo.name}. Skipping git blame.`);
+            vulnerability.blame = 'No path available for git blame.';
+          }
+        } else {
+          console.warn(`No nodes found for ${pkgInfo.name}. Skipping git blame.`);
+          vulnerability.blame = 'No nodes found for git blame.';
+        }
+
+        // Get guidance on how to resolve the issue
+        vulnerability.resolutionGuidance = getResolutionGuidance(vulnerability);
+
+        vulnerabilities.push(vulnerability);
+      }
+    } else {
+      console.log('No vulnerabilities found.');
+    }
+
+    return vulnerabilities;
+  } catch (err) {
+    console.error('Error processing npm audit:', err);
+    throw err;
+  }
+};
 
 // Example usage
 (async () => {
   try {
-    const vulnerabilities = await checkVulnerabilities('/path/to/your/repo');
+    const vulnerabilities = await checkVulnerabilities(cpath);
     console.log('Vulnerabilities:', vulnerabilities);
+
+
+    // Example result structure
+    const scanResults = {
+      secrets: secretDataFound,
+      misconfigurations: checkMisconfigurations,
+      vulnerabilities: vulnerabilities,
+      unwantedFiles: ['.env', '.git', '.log'],
+    };
+
+    // Send results back to the frontend
+    res.json(scanResults);
   } catch (err) {
     console.error('Failed to get vulnerabilities:', err);
   }
@@ -238,16 +383,7 @@ const checkVulnerabilities = async (cpath) => {
     //const repoPath = path.join(__dirname, '/tmp/GitRepositorySecurityScanner/git-security-scanner-frontend'); // replace with the actual repo path
     //runNpmAudit('/tmp/GitRepositorySecurityScanner/git-security-scanner-frontend');
 
-    // Example result structure
-    const scanResults = {
-      secrets: secretDataFound,
-      misconfigurations: checkMisconfigurations,
-      vulnerabilities: checkVulnerabilities,
-      unwantedFiles: ['.env', '.git', '.log'],
-    };
-
-    // Send results back to the frontend
-    res.json(scanResults);
+    
 
   } catch (error) {
     console.error('Error scanning repo:', error);
