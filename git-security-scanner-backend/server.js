@@ -87,11 +87,11 @@ app.post('/scan', async (req, res) => {
     }
 
     // Function to check for misconfigurations in the repo
-    const checkMisconfigurations = (clonePath) => {
+    const checkMisconfigurations = async (clonePath1) => {
         const issues = [];
     
         // Check if .env file exists and contains keys
-        const envFilePath = path.join(clonePath, '.env');
+        const envFilePath = path.join(clonePath1, '.env');
         console.log('envFilePath:',envFilePath);
         if (fs.existsSync(envFilePath)) {
         const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
@@ -105,7 +105,7 @@ app.post('/scan', async (req, res) => {
         }
     
         // Check for misconfigured .gitignore files
-        const gitignorePath = path.join(clonePath, '.gitignore');
+        const gitignorePath = path.join(clonePath1, '.gitignore');
         if (fs.existsSync(gitignorePath)) {
         const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
         if (!gitignoreContent.includes('.env')) {
@@ -358,19 +358,74 @@ const checkVulnerabilities = async (cpath1) => {
   }
 };
 
-// Example usage
+
+
+// Unwanted files and directories patterns
+const unwantedPatterns = [
+  '.env',
+  '.git/',
+  '.log',
+  'node_modules/',
+  '.vscode/',
+  '.idea/',
+  '.DS_Store',
+  'Thumbs.db',
+  '*.bak',
+  '*.swp',
+  '*.sqlite3',
+  '*.db',
+  'dist/',
+  'build/'
+];
+
+// Function to recursively scan the directory and find unwanted files asynchronously
+const scanDirectory = async (dirPath) => {
+  let unwantedFiles = [];
+  
+  try {
+    const files = await fs.readdir(dirPath);  // Asynchronously read the directory
+
+    for (let file of files) {
+      const filePath = path.join(dirPath, file);
+      const stat = await fs.stat(filePath);  // Asynchronously get file stats
+
+      // Check if the file matches any unwanted pattern
+      if (unwantedPatterns.some(pattern => filePath.includes(pattern))) {
+        unwantedFiles.push(filePath);
+      }
+
+      // Recurse into subdirectories if it's a directory
+      if (stat.isDirectory()) {
+        const subDirFiles = await scanDirectory(filePath);
+        unwantedFiles = unwantedFiles.concat(subDirFiles);
+      }
+    }
+  } catch (err) {
+    console.error('Error scanning directory:', err);
+  }
+
+  return unwantedFiles;
+};
+
 (async () => {
   try {
-    const vulnerabilities = await checkVulnerabilities(cpath);
+    let vulnerabilities = await checkVulnerabilities(cpath);
+    let misconfigurations = await checkMisconfigurations(cpath);
+    let unwantedFiles = await scanDirectory(cpath); 
     console.log('Vulnerabilities:', vulnerabilities);
+
+    if (unwantedFiles.length === 0) {
+      unwantedFiles = { message: 'No unwanted files found' };
+    }
+    
 
 
     // Example result structure
     const scanResults = {
       secrets: secretDataFound,
-      misconfigurations: checkMisconfigurations,
+      misconfigurations: misconfigurations,
       vulnerabilities: vulnerabilities,
-      unwantedFiles: ['.env', '.git', '.log'],
+      unwantedFiles: unwantedFiles,
     };
 
     // Send results back to the frontend
