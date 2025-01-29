@@ -300,6 +300,23 @@ app.post('/scan', async (req, res) => {
       return guidance;
     };
 
+    // Function to get the Git commit history and diffs for a specific file (package.json or package-lock.json)
+    const getGitCommitHistoryWithDiff = async (filePath) => {
+      try {
+        const log = await git.log([filePath]); // Get the log for package.json or package-lock.json
+        const commitHistoryWithDiffs = [];
+
+        // For each commit, get the diff for the file
+        for (const commit of log.all) {
+          const diff = await git.diff([commit.hash, '--', filePath]);
+          commitHistoryWithDiffs.push({ commit, diff });
+        }
+
+        return commitHistoryWithDiffs;
+      } catch (error) {
+        console.error('Error getting git commit history or diff:', error);
+      }
+    };
 
     const checkVulnerabilities = async (cpath) => {
       try {
@@ -363,30 +380,21 @@ app.post('/scan', async (req, res) => {
             */
 
             // Check Git history for package.json or package-lock.json
-            const gitHistory = await getGitCommitHistory('package.json'); // or 'package-lock.json'
-        
-            gitHistory.forEach(commit => {
-              if (commit.message.includes(pkg)) {
-                vulnerability.blame = `Package ${pkg} added/updated in commit by ${commit.author_name}: ${commit.message}`;
+            const gitHistoryWithDiffs = await getGitCommitHistoryWithDiff('package.json'); // or 'package-lock.json'
+
+            gitHistoryWithDiffs.forEach(({ commit, diff }) => {
+              // If the diff shows changes related to the package (like package version update or package addition)
+              if (diff.includes(vulnerability)) {
+                console.log(`Package ${vulnerability.name} was added/updated in commit by ${commit.author_name} (${commit.date}):`);
+                console.log(`Commit message: ${commit.message}`);
+                console.log(`Diff: ${diff}`);
+                vulnerability.blame = `Package ${vulnerability.name} was added/updated in commit by ${commit.author_name} (${commit.date}):`
               }
             });
             // Get guidance on how to resolve the issue
             vulnerability.resolutionGuidance = getResolutionGuidance(vulnerability);
 
             vulnerabilities.push(vulnerability);
-          }
-
-          for (let pkg of vulnerabilities) {
-            console.log(`Checking Git history for vulnerable package: ${pkg}`);
-        
-            // Check Git history for package.json or package-lock.json
-            const gitHistory = await getGitCommitHistory('package.json'); // or 'package-lock.json'
-        
-            gitHistory.forEach(commit => {
-              if (commit.message.includes(pkg)) {
-                pkg.blame = `Package ${pkg} added/updated in commit by ${commit.author_name}: ${commit.message}`;
-              }
-            });
           }
         } else {
           console.log('No vulnerabilities found.');
