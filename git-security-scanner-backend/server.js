@@ -87,7 +87,7 @@ app.post('/scan', async (req, res) => {
     }
 
     // Helper function to check for misconfigurations in configuration files
-    const checkMisconfigurations = (repoPath) => {
+    const checkMisconfigurations = async (repoPath) => {
       const misconfigFiles = ['.env', 'config.json', 'settings.yml'];
 
       const misconfigIssues = [];
@@ -135,7 +135,7 @@ app.post('/scan', async (req, res) => {
       return misconfigIssues;
     };
 
-    const cpath = '/tmp/GitRepositorySecurityScanner/git-security-scanner-frontend';
+    //const cpath = '/tmp/GitRepositorySecurityScanner/git-security-scanner-frontend';
     // Function to run npm audit and return vulnerabilities
     /*let checkVulnerabilities = (cpath) => {
       return new Promise((resolve, reject) => {
@@ -197,11 +197,11 @@ app.post('/scan', async (req, res) => {
 
     /*
     --- working start ---
-    const checkVulnerabilities = async (cpath1) => {
+    const checkVulnerabilities = async (cpath) => {
       try {
         // Wrap exec in a Promise to handle async behavior
         const stdout = await new Promise((resolve, reject) => {
-          exec('npm audit --json', { cwd: cpath1 }, (error, stdout, stderr) => {
+          exec('npm audit --json', { cwd: cpath }, (error, stdout, stderr) => {
             if (stderr) {
                 console.error('stderr:', stderr);  // Log stderr for more details
             }
@@ -249,11 +249,11 @@ app.post('/scan', async (req, res) => {
     */
 
 
-    const getGitBlame = async (filePath, cpath2) => {
+    const getGitBlame = async (filePath, cpath) => {
       try {
         // Running 'git blame' command for the specific file
         const stdout = await new Promise((resolve, reject) => {
-          exec(`git blame ${filePath}`, { cwd: cpath2 }, (error, stdout, stderr) => {
+          exec(`git blame ${filePath}`, { cwd: cpath }, (error, stdout, stderr) => {
             if (stderr) {
               reject(`Error in git blame: ${stderr}`);
             }
@@ -301,10 +301,10 @@ app.post('/scan', async (req, res) => {
     };
 
 
-    const checkVulnerabilities = async (cpath1) => {
+    const checkVulnerabilities = async (cpath) => {
       try {
         const stdout = await new Promise((resolve, reject) => {
-          exec('npm audit --json', { cwd: cpath1 }, (error, stdout, stderr) => {
+          exec('npm audit --json', { cwd: cpath }, (error, stdout, stderr) => {
             if (stderr) {
               console.error('stderr:', stderr);
             }
@@ -400,50 +400,58 @@ app.post('/scan', async (req, res) => {
     // Function to recursively scan the directory and find unwanted files asynchronously
     const scanDirectory = async (dirPath) => {
       let unwantedFiles = [];
-      
-      try {
-        const files = await fs.readdir(dirPath);  // Asynchronously read the directory
-
-        for (let file of files) {
-          const filePath = path.join(dirPath, file);
-          const stat = await fs.stat(filePath);  // Asynchronously get file stats
-
-          // Check if the file matches any unwanted pattern
-          if (unwantedPatterns.some(pattern => filePath.includes(pattern))) {
-            unwantedFiles.push(filePath);
+      console.log("dirPath --",dirPath);
+        fs.readdir(dirPath, async (err, files) => {
+          if (err) {
+              console.error('Error reading directory:', err);
+              return;
           }
-
-          // Recurse into subdirectories if it's a directory
-          if (stat.isDirectory()) {
-            const subDirFiles = await scanDirectory(filePath);
-            unwantedFiles = unwantedFiles.concat(subDirFiles);
+          console.log('Files:', files);
+          for (let file of files) {
+            const filePath = path.join(dirPath, file);
+            const stat = fs.stat(filePath);  // Asynchronously get file stats
+  
+            // Check if the file matches any unwanted pattern
+            if (unwantedPatterns.some(pattern => filePath.includes(pattern))) {
+              unwantedFiles.push(filePath);
+            }
+  
+            // Recurse into subdirectories if it's a directory
+            if (stat.isDirectory()) {
+              const subDirFiles = await scanDirectory(filePath);
+              unwantedFiles = unwantedFiles.concat(subDirFiles);
+            }
           }
-        }
-      } catch (err) {
-        console.error('Error scanning directory:', err);
-      }
-
+      });
       return unwantedFiles;
     };
 
     (async () => {
       try {
-        let vulnerabilities = await checkVulnerabilities(cpath);
-        let misconfigurations = await checkMisconfigurations(cpath);
-        let unwantedFiles = await scanDirectory(cpath); 
-        console.log('Vulnerabilities:', vulnerabilities);
+        const packageJsonDirs = findPackageJsonDirs(clonePath); 
+        console.log("packageJsonFiles --",packageJsonDirs);
+        // Define functions to gather results for each cpath
+        const gatherResults = async (cpath) => {
+          const vulnerabilities = await checkVulnerabilities(cpath);
+          const misconfigurations = await checkMisconfigurations(cpath);
+          const unwantedFiles = await scanDirectory(cpath);
 
-        console.log("secretDataFound --",secretDataFound);
-        
-
-
-        // Example result structure
-        const scanResults = {
-          secrets: secretDataFound,
-          misconfigurations: misconfigurations,
-          vulnerabilities: vulnerabilities,
-          unwantedFiles: unwantedFiles,
+          return {
+            vulnerabilities,
+            misconfigurations,
+            unwantedFiles
+          };
         };
+
+        // Iterate over all cpaths and gather results asynchronously
+        const scanResults = { secrets: secretDataFound, misconfigurations: [], vulnerabilities: [], unwantedFiles: [] };
+
+        for (let cpath of packageJsonDirs) {
+          const results = await gatherResults(cpath);
+          scanResults.misconfigurations.push(...results.misconfigurations);
+          scanResults.vulnerabilities.push(...results.vulnerabilities);
+          scanResults.unwantedFiles.push(...results.unwantedFiles);
+        }
 
         // Send results back to the frontend
         res.json(scanResults);
@@ -491,7 +499,7 @@ function deleteFolderRecursive(folderPath) {
   }
 }*/
 
-async function runNpmAudit(repoPath) {
+/*async function runNpmAudit(repoPath) {
   try {
     // Make sure you provide the right options to match your requirements
     const auditResult = await libnpm.audit({ cwd: repoPath, json: true });
@@ -499,6 +507,32 @@ async function runNpmAudit(repoPath) {
   } catch (err) {
     console.error('Error running npm audit:', err);
   }
+}*/
+
+function findPackageJsonDirs(dir) {
+  let packageJsonDirs = [];
+
+  // Read the contents of the directory
+  const items = fs.readdirSync(dir);
+
+  for (let item of items) {
+    const fullPath = path.join(dir, item);
+    const stat = fs.statSync(fullPath);
+
+    // Check if it's a directory
+    if (stat.isDirectory()) {
+      // Check if this directory contains a package.json
+      if (fs.existsSync(path.join(fullPath, 'package.json'))) {
+        // Add the directory path if it contains package.json
+        packageJsonDirs.push(fullPath);
+      }
+
+      // Recursively search in subdirectories
+      packageJsonDirs = packageJsonDirs.concat(findPackageJsonDirs(fullPath));
+    }
+  }
+
+  return packageJsonDirs;
 }
 
 const port = 5000;
