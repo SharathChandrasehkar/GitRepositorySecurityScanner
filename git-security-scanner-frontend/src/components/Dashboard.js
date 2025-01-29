@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
 import { Button, Form, Alert, Spinner, Container, Row, Col, Card } from 'react-bootstrap';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import 'jspdf-autotable';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
 
@@ -11,6 +14,9 @@ const Dashboard = () => {
   const [scanResults, setScanResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const chartsRef = useRef(null); // Create a ref to capture the charts container
+  const [isLoading, setIsLoading] = useState(false); // State to track loading
 
   const handleScan = async () => {
     setLoading(true);
@@ -93,12 +99,183 @@ const Dashboard = () => {
     };
   };
 
+  // Download PDF function
+  const downloadPDF = () => {
+    setIsLoading(true); // Set loading to true when the download starts
+    const doc = new jsPDF();
+    
+    // Add Title to PDF
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold'); // Make the title bold
+    doc.text('Git Repository Security Scanner Report', 14, 16);
+  
+    // Add Scan Summary (Secrets, Misconfigurations, etc.)
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold'); // Make the title bold
+    doc.text('Scan Summary:', 14, 30);
+  
+    const scanSummary = `
+      - Secrets: ${scanResults.secrets?.length || 0}
+      - Misconfigurations: ${scanResults.misconfigurations?.length || 0}
+      - Vulnerabilities: ${scanResults.vulnerabilities?.length || 0}
+      - Unwanted Files: ${scanResults.unwantedFiles?.length || 0}
+    `;
+    doc.setFont('helvetica', 'normal'); // Make the title bold
+    doc.text(scanSummary, 14, 30); // Add the scan summary text
+  
+    // Capture the chart and add to PDF
+    const captureChart = async () => {
+      const chartsElement = chartsRef.current;
+  
+      if (chartsElement) {
+        const canvas = await html2canvas(chartsElement);
+  
+        // Add the chart image to the PDF
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 14, 60, 180, 100); // Adjust coordinates and size
+  
+        // Set initial starting Y position for the tables
+        let startY = 200; // Initial start Y position for the first table
+  
+        // Function to check if we need a page break
+        const checkPageBreak = (doc, startY, height) => {
+          const pageHeight = doc.internal.pageSize.height;
+          if (startY + height > pageHeight) {
+            doc.addPage();
+            return 10; // Start a little below the top of the new page
+          }
+          return startY;
+        };
+  
+        // Add Secrets Table
+        if (scanResults.secrets?.length > 0) {
+          let currentY = startY;
+          const tableHeight = scanResults.secrets.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+            head: [['#', 'Secret']],
+            body: scanResults.secrets.map((secret, index) => [index + 1, secret]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Secrets Found:', 14, currentY - 5);
+            },
+          });
+  
+          // Update startY after the secrets table
+          startY = doc.lastAutoTable.finalY + 10;
+        }
+  
+        // Add Misconfigurations Table
+        if (scanResults.misconfigurations?.length > 0) {
+          let currentY = startY;
+          const tableHeight = scanResults.misconfigurations.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+            head: [['#', 'Misconfiguration']],
+            body: scanResults.misconfigurations.map((misconfig, index) => [index + 1, misconfig]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Misconfigurations Found:', 14, currentY - 5);
+            },
+          });
+  
+          // Update startY after the misconfigurations table
+          startY = doc.lastAutoTable.finalY + 10;
+        }
+  
+        // Add Vulnerabilities Table
+        if (scanResults.vulnerabilities?.length > 0) {
+          let currentY = startY;
+          const tableHeight = scanResults.vulnerabilities.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+            head: [['#', 'Vulnerability', 'Severity', 'Affected Version', 'Fix Available', 'Resolution Guidance']],
+            body: scanResults.vulnerabilities.map((vuln, index) => [
+              index + 1,
+              vuln.name,
+              vuln.severity,
+              vuln.range,
+              vuln.fixAvailable ? 'Yes' : 'No',
+              vuln.resolutionGuidance,
+            ]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Vulnerabilities Found:', 14, currentY - 5);
+            },
+          });
+  
+          // Update startY after the vulnerabilities table
+          startY = doc.lastAutoTable.finalY + 10;
+        }
+  
+        // Add Unwanted Files Table
+        if (scanResults.unwantedFiles?.length > 0) {
+          let currentY = startY;
+          const tableHeight = scanResults.unwantedFiles.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+            head: [['#', 'Unwanted File']],
+            body: scanResults.unwantedFiles.map((file, index) => [index + 1, file]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Unwanted Files Found:', 14, currentY - 5);
+            },
+          });
+  
+          // Update startY after the unwanted files table
+          startY = doc.lastAutoTable.finalY + 10;
+        }
+  
+        // Save the PDF
+        doc.save('security_scan_report.pdf');
+
+        // Set loading state to false after PDF generation is completed
+        setIsLoading(false);
+      }
+    };
+  
+    captureChart();
+  };
+
   return (
     <Container className="mt-4">
-      <h1 className="text-center">Git Repository Security Scanner</h1>
+      <h1 
+        className="text-center"
+        style={{ 
+          backgroundColor: '#0d6efd',  // Your desired background color
+          color: '#ffffff',            // White text color for contrast
+          padding: '20px',             // Padding around the text
+          borderRadius: '8px',         // Optional: Rounded corners for the header
+        }}
+      >
+        Git Repository Security Scanner
+      </h1>
 
       <Row className="justify-content-center mt-4">
-        <Col xs={12} sm={8} md={6} lg={4}>
+        <Col xs={12} sm={8} md={6} lg={6}>
           <Form.Control
             type="text"
             placeholder="Enter GitHub Repo URL"
@@ -116,7 +293,19 @@ const Dashboard = () => {
             {loading ? <Spinner animation="border" size="sm" /> : 'Scan Repo'}
           </Button>
         </Col>
+        <Col>
+          {/* Download Button */}
+          <Button 
+            onClick={downloadPDF} 
+            variant="secondary" 
+            disabled={isLoading} // Disable button while loading
+          >
+            {isLoading ? <Spinner animation="border" size="sm" /> : 'Download PDF'}
+          </Button>
+        </Col>
       </Row>
+
+      
 
       {/* Error Handling */}
       {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
@@ -124,7 +313,7 @@ const Dashboard = () => {
       {/* Display Scan Results */}
       {scanResults && !loading && (
         <>
-          <Row className="mt-5">
+          <Row className="mt-5" ref={chartsRef}>
           <Col md={6}>
               <Card className="mb-4">
                 <Card.Body>
@@ -158,7 +347,6 @@ const Dashboard = () => {
                         },
                       },
                     }}
-                    style={{ height: '300px', width: '100%' }} // Apply custom size
                   />
                 </Card.Body>
               </Card>
@@ -182,7 +370,6 @@ const Dashboard = () => {
                         },
                       },
                     }}
-                    style={{ height: '200px', width: '100%' }} // Apply custom size
                   />
                 </Card.Body>
               </Card>
@@ -190,32 +377,8 @@ const Dashboard = () => {
           </Row>
 
           <Row>
-            {/* Display Misconfigurations */}
-            <Col md={6}>
-              {scanResults.misconfigurations?.length > 0 ? (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Misconfigurations Found</h5>
-                    <ul>
-                      {scanResults.misconfigurations.map((misconfig, index) => (
-                        <li key={index}>
-                          <strong>{misconfig}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>No Misconfigured Data Found</h5>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
-
             {/* Display Secrets */}
-            <Col md={6}>
+            <Col md={4}>
               {(scanResults.secrets?.length || 0) > 0 && (
                 <Card className="mb-3">
                   <Card.Body>
@@ -232,38 +395,9 @@ const Dashboard = () => {
                 </Card>
               )}
             </Col>
-          </Row>
 
-          <Row>
-            <Col md={6}>
-              {(scanResults.vulnerabilities?.length || 0) > 0 && (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Vulnerabilities Found</h5>
-                    <ul>
-                      {scanResults.vulnerabilities.map((vuln, index) => (
-                        <li key={index}>
-                          <strong>{vuln.name}</strong> (Severity: {vuln.severity})<br />
-                          Affected Version Range: {vuln.range}<br />
-                          Fix Available: {vuln.fixAvailable ? 'Yes' : 'No'}<br />
-                          Resolution Guidance: {vuln.resolutionGuidance}<br />
-                          {/* Display Git Blame if available */}
-                          {vuln.blame ? (
-                            <>
-                              <br />
-                              <strong>Git Blame:</strong> <pre>{vuln.blame}</pre>
-                            </>
-                          ) : (
-                            <span>No Git Blame available for this vulnerability.</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
-            <Col md={6}>
+            {/* Display Unwanted Files */}
+            <Col md={4}>
               {(scanResults.unwantedFiles?.length || 0) > 0 ? (
                 <Card className="mb-3">
                   <Card.Body>
@@ -291,9 +425,62 @@ const Dashboard = () => {
                     </small>
                   </Card.Body>
                 </Card>
-              )}
+              )}              
+            </Col>
 
-              
+            {/* Display Misconfigurations */}
+            <Col md={4}>
+              {scanResults.misconfigurations?.length > 0 ? (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>Misconfigurations Found</h5>
+                    <ul>
+                      {scanResults.misconfigurations.map((misconfig, index) => (
+                        <li key={index}>
+                          <strong>{misconfig}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </Card.Body>
+                </Card>
+              ) : (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>No Misconfigured Data Found</h5>
+                  </Card.Body>
+                </Card>
+              )}
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={12}>
+              {(scanResults.vulnerabilities?.length || 0) > 0 && (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>Vulnerabilities Found</h5>
+                    <ul>
+                      {scanResults.vulnerabilities.map((vuln, index) => (
+                        <li key={index}>
+                          <strong>{vuln.name}</strong> (Severity: {vuln.severity})<br />
+                          Affected Version Range: {vuln.range}<br />
+                          Fix Available: {vuln.fixAvailable ? 'Yes' : 'No'}<br />
+                          Resolution Guidance: {vuln.resolutionGuidance}<br />
+                          {/* Display Git Blame if available */}
+                          {vuln.blame ? (
+                            <>
+                              <br />
+                              <strong>Git Blame:</strong> <pre>{vuln.blame}</pre>
+                            </>
+                          ) : (
+                            <span>No Git Blame available for this vulnerability.</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card.Body>
+                </Card>
+              )}
             </Col>
           </Row>
         </>
