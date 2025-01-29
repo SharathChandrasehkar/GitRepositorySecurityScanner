@@ -189,7 +189,51 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-          
+          <Row>
+            {/* Display Misconfigurations */}
+            <Col md={6}>
+              {scanResults.misconfigurations?.length > 0 ? (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>Misconfigurations Found</h5>
+                    <ul>
+                      {scanResults.misconfigurations.map((misconfig, index) => (
+                        <li key={index}>
+                          <strong>{misconfig}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </Card.Body>
+                </Card>
+              ) : (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>No Misconfigured Data Found</h5>
+                  </Card.Body>
+                </Card>
+              )}
+            </Col>
+
+            {/* Display Secrets */}
+            <Col md={6}>
+              {(scanResults.secrets?.length || 0) > 0 && (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>Secrets Found</h5>
+                    <small>One of these secrets are exposed: API_KEY|SECRET_KEY|PASSWORD|TOKEN in these files </small>
+                    <ul>
+                      {scanResults.secrets.map((secret, index) => (
+                        <li key={index}>
+                          <strong>{secret}</strong><br/>
+                        </li>
+                      ))}
+                    </ul>
+                  </Card.Body>
+                </Card>
+              )}
+            </Col>
+          </Row>
+
           <Row>
             <Col md={6}>
               {(scanResults.vulnerabilities?.length || 0) > 0 && (
