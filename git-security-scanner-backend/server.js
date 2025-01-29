@@ -336,7 +336,7 @@ app.post('/scan', async (req, res) => {
             };
 
             // Add git blame information for the file(s) impacted
-            console.log('pkgInfo --',JSON.stringify(pkgInfo));
+            /*console.log('pkgInfo --',JSON.stringify(pkgInfo));
             // Check if nodes are available and valid
             if (pkgInfo.nodes && pkgInfo.nodes.length > 0) {
               const filePath = pkgInfo.nodes[0].path;
@@ -360,11 +360,33 @@ app.post('/scan', async (req, res) => {
               console.warn(`No nodes found for ${pkgInfo.name}. Skipping git blame.`);
               vulnerability.blame = 'No nodes found for git blame.';
             }
+            */
 
+            // Check Git history for package.json or package-lock.json
+            const gitHistory = await getGitCommitHistory('package.json'); // or 'package-lock.json'
+        
+            gitHistory.forEach(commit => {
+              if (commit.message.includes(pkg)) {
+                vulnerability.blame = `Package ${pkg} added/updated in commit by ${commit.author_name}: ${commit.message}`;
+              }
+            });
             // Get guidance on how to resolve the issue
             vulnerability.resolutionGuidance = getResolutionGuidance(vulnerability);
 
             vulnerabilities.push(vulnerability);
+          }
+
+          for (let pkg of vulnerabilities) {
+            console.log(`Checking Git history for vulnerable package: ${pkg}`);
+        
+            // Check Git history for package.json or package-lock.json
+            const gitHistory = await getGitCommitHistory('package.json'); // or 'package-lock.json'
+        
+            gitHistory.forEach(commit => {
+              if (commit.message.includes(pkg)) {
+                pkg.blame = `Package ${pkg} added/updated in commit by ${commit.author_name}: ${commit.message}`;
+              }
+            });
           }
         } else {
           console.log('No vulnerabilities found.');
@@ -400,29 +422,32 @@ app.post('/scan', async (req, res) => {
     // Function to recursively scan the directory and find unwanted files asynchronously
     const scanDirectory = async (dirPath) => {
       let unwantedFiles = [];
-      console.log("dirPath --",dirPath);
-        fs.readdir(dirPath, async (err, files) => {
-          if (err) {
-              console.error('Error reading directory:', err);
-              return;
+      console.log("dirPath --", dirPath);
+
+      try {
+        // Read the contents of the directory
+        const files = await fs.promises.readdir(dirPath);
+        console.log('Files:', files);
+
+        for (let file of files) {
+          const filePath = path.join(dirPath, file);
+          const stat = await fs.promises.stat(filePath);  // Asynchronously get file stats
+
+          // Check if the file matches any unwanted pattern
+          if (unwantedPatterns.some(pattern => filePath.includes(pattern))) {
+            unwantedFiles.push(filePath);
           }
-          console.log('Files:', files);
-          for (let file of files) {
-            const filePath = path.join(dirPath, file);
-            const stat = fs.stat(filePath);  // Asynchronously get file stats
-  
-            // Check if the file matches any unwanted pattern
-            if (unwantedPatterns.some(pattern => filePath.includes(pattern))) {
-              unwantedFiles.push(filePath);
-            }
-  
-            // Recurse into subdirectories if it's a directory
-            if (stat.isDirectory()) {
-              const subDirFiles = await scanDirectory(filePath);
-              unwantedFiles = unwantedFiles.concat(subDirFiles);
-            }
+
+          // Recurse into subdirectories if it's a directory
+          if (stat.isDirectory()) {
+            const subDirFiles = await scanDirectory(filePath);
+            unwantedFiles = unwantedFiles.concat(subDirFiles);
           }
-      });
+        }
+      } catch (err) {
+        console.error('Error reading directory:', err);
+      }
+
       return unwantedFiles;
     };
 
