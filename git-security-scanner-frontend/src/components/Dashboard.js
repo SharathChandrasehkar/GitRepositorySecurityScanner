@@ -22,7 +22,9 @@ const Dashboard = () => {
     setLoading(true);
     setError(null); // Reset error on new scan
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'; // Use the backend API URL from environment variable or fallback to localhost
+      const apiUrl = process.env.NODE_ENV === 'production'
+      ? 'https://gitrepositorysecurityscannerbackend.onrender.com'  // Production URL
+      : 'http://localhost:5000';  // Local URL for development
       const response = await axios.post(`${apiUrl}/scan`, { repoUrl });
       setScanResults(response.data);
     } catch (error) {

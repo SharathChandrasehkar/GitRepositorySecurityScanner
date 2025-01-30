@@ -14,8 +14,15 @@ const libnpm = require('libnpm');
 const app = express();
 const git = simpleGit();
 
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://gitrepositorysecurityscannerfrontend.onrender.com'], // Add local and deployed origins
+};
+
+// Use the CORS middleware
+app.use(cors(corsOptions));
+
 // Enable CORS for all origins (you can specify more granular settings if needed)
-app.use(cors());
+//app.use(cors());
 
 app.use(bodyParser.json());
 
