@@ -568,7 +568,7 @@ function findPackageJsonDirs(dir) {
   return packageJsonDirs;
 }
 
-const port = 5000;
+const port = process.env.PORT || 5000;  // Fallback to 5000 if no PORT is set by the environment
 app.listen(port, () => {
   console.log(`Backend is running on http://localhost:${port}`);
 });

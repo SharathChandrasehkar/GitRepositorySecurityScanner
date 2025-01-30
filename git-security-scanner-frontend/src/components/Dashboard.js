@@ -22,7 +22,8 @@ const Dashboard = () => {
     setLoading(true);
     setError(null); // Reset error on new scan
     try {
-      const response = await axios.post('http://localhost:5000/scan', { repoUrl });
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'; // Use the backend API URL from environment variable or fallback to localhost
+      const response = await axios.post(`${apiUrl}/scan`, { repoUrl });
       setScanResults(response.data);
     } catch (error) {
       setError('Error during scan. Please try again!');
