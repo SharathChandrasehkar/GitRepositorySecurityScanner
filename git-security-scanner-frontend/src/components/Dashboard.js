@@ -214,6 +214,7 @@ const Dashboard = () => {
               vuln.range,
               vuln.fixAvailable ? 'Yes' : 'No',
               vuln.resolutionGuidance,
+              vuln.blame || 'No Git Blame', // Add the Git Blame info
             ]),
             startY: currentY,
             theme: 'striped',
@@ -382,7 +383,7 @@ const Dashboard = () => {
           <Row>
             {/* Display Secrets */}
             <Col md={4}>
-              {(scanResults.secrets?.length || 0) > 0 && (
+              {(scanResults.secrets?.length || 0) > 0 ? (
                 <Card className="mb-3">
                   <Card.Body>
                     <h5>Secrets Found</h5>
@@ -390,10 +391,16 @@ const Dashboard = () => {
                     <ul>
                       {scanResults.secrets.map((secret, index) => (
                         <li key={index}>
-                          <strong>{secret}</strong><br/>
+                          <strong>{secret}</strong><br />
                         </li>
                       ))}
                     </ul>
+                  </Card.Body>
+                </Card>
+              ) : (
+                <Card className="mb-3">
+                  <Card.Body>
+                    <h5>No Secrets Found</h5>
                   </Card.Body>
                 </Card>
               )}
@@ -411,8 +418,19 @@ const Dashboard = () => {
                       {unwantedPatterns.join(', ')}.
                     </small>
                     <ul>
-                      {scanResults.unwantedFiles.map((file, index) => (
-                        <li key={index}>{file}</li>
+                      {scanResults.unwantedFiles.map((unwantedFile, index) => (
+                        <li key={index}>{unwantedFile}
+                        Resolution Guidance: {unwantedFile.resolutionGuidance}<br />
+                          {/* Display Git Blame if available */}
+                          {unwantedFile.blame ? (
+                            <>
+                              <br />
+                              <strong>Git Blame:</strong> <pre>{unwantedFile.blame}</pre>
+                            </>
+                          ) : (
+                            <span>No Git Blame available for this vulnerability.</span>
+                          )}
+                        </li>
                       ))}
                     </ul>
                   </Card.Body>
@@ -441,6 +459,16 @@ const Dashboard = () => {
                       {scanResults.misconfigurations.map((misconfig, index) => (
                         <li key={index}>
                           <strong>{misconfig}</strong>
+                          Resolution Guidance: {misconfig.resolutionGuidance}<br />
+                          {/* Display Git Blame if available */}
+                          {misconfig.blame ? (
+                            <>
+                              <br />
+                              <strong>Git Blame:</strong> <pre>{misconfig.blame}</pre>
+                            </>
+                          ) : (
+                            <span>No Git Blame available for this vulnerability.</span>
+                          )}
                         </li>
                       ))}
                     </ul>

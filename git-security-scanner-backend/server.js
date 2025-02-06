@@ -76,13 +76,13 @@ app.post('/scan', async (req, res) => {
 
                 if (stats.isDirectory()) {
                     // If it's a directory, add it to the stack
-                    console.log(`Directory: ${fullPath}`);
+                    //console.log(`Directory: ${fullPath}`);
                     stack.push(fullPath);
                 } else if (stats.isFile()) {
                     // If it's a file, read its contents
-                    console.log(`File: ${fullPath}`);
+                    //console.log(`File: ${fullPath}`);
                     const fileContent = fs.readFileSync(fullPath, 'utf8');
-                    console.log(fileContent);  // Process the file content as needed
+                    //console.log(fileContent);  // Process the file content as needed
                     if (secretKeysPattern.test(fileContent)) {
                         secretDataFound.push(item);
                     }
@@ -138,6 +138,11 @@ app.post('/scan', async (req, res) => {
           }
         }
       });
+
+      for (let misconf of misconfigIssues) {
+        misconf.resolutionGuidance = getResolutionGuidance(misconf);
+        misconf.filepath = repoPath;
+      }
 
       return misconfigIssues;
     };
@@ -256,73 +261,147 @@ app.post('/scan', async (req, res) => {
     */
 
 
-    const getGitBlame = async (filePath, cpath) => {
+    const getGitBlame1 = async (filePath, fileName, searchPattern) => {
       try {
         // Running 'git blame' command for the specific file
         const stdout = await new Promise((resolve, reject) => {
-          exec(`git blame ${filePath}`, { cwd: cpath }, (error, stdout, stderr) => {
+          exec(`git blame ${filePath}/${fileName}`, { cwd: filePath, maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
             if (stderr) {
               reject(`Error in git blame: ${stderr}`);
             }
             if (error) {
               reject(`git blame failed with error: ${error.message}`);
             }
-            resolve(stdout); // Return the output of git blame
+            //console.log("stdout --",stdout);
+            // Split the output into lines
+            const lines = stdout.split('\n');
+            let output = '';
+
+            // Loop through each line and check if it contains the package name
+            for (const line of lines) {
+              // Check if the line contains the package name
+              if (line.includes(searchPattern)) {
+                // The commit hash is the first part of the line, and the username is the author name
+                const parts = line.trim().split(' ');
+
+                const commitHash = parts[0]; // Commit hash is the first element
+                const author = parts[1]; // Author name is the second element
+
+                //console.log(`Package "${searchPattern}" was added/modified in commit: ${commitHash}`);
+                //console.log(`Author: ${author}`);
+                output = `Package "${searchPattern}" was added/modified by: ${author}`;
+
+                // Exit the loop once the package name is found
+                break; // Exits the loop
+              }
+            }
+            resolve(output); // Resolve the promise after the loop is finished
           });
         });
-        return stdout;
+        return stdout; // Return the output of the git blame
       } catch (err) {
         console.error('Error running git blame:', err);
         throw err;
       }
     };
 
-    const getResolutionGuidance = (vulnerability) => {
-      // Example guidance based on severity
-      const severity = vulnerability.severity.toLowerCase();
-      let guidance = '';
-
-      switch (severity) {
-        case 'high':
-          guidance = 'This is a high-severity vulnerability. You should upgrade to the latest fixed version as soon as possible. Check the advisories for potential impact.';
-          break;
-        case 'moderate':
-          guidance = 'This is a moderate-severity vulnerability. If possible, upgrade to the recommended fixed version to mitigate risks.';
-          break;
-        case 'low':
-          guidance = 'This is a low-severity vulnerability. You can monitor the situation and consider upgrading when convenient.';
-          break;
-        default:
-          guidance = 'Please check the advisory for further details on resolving this issue.';
-          break;
-      }
-
-      // You can also include example code or further steps based on the vulnerability type
-      if (vulnerability.fixAvailable !== 'No fix available') {
-        guidance += `\nUpgrade ${vulnerability.name} to version ${vulnerability.fixAvailable} to resolve the issue.`;
-      } else {
-        guidance += '\nNo fix available yet. Stay updated with the project for any future patches.';
-      }
-
-      return guidance;
-    };
-
-    // Function to get the Git commit history and diffs for a specific file (package.json or package-lock.json)
-    const getGitCommitHistoryWithDiff = async (filePath) => {
-      try {
-        const log = await git.log([filePath]); // Get the log for package.json or package-lock.json
-        const commitHistoryWithDiffs = [];
-
-        // For each commit, get the diff for the file
-        for (const commit of log.all) {
-          const diff = await git.diff([commit.hash, '--', filePath]);
-          commitHistoryWithDiffs.push({ commit, diff });
+    // Function to find commit hash and username for a particular package
+    const getGitBlame = (filePath, packageName) => {
+      // Run the git blame command for the specified file
+      exec(`git blame ${filePath}`, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing git blame: ${error.message}`);
+          return;
         }
 
-        return commitHistoryWithDiffs;
-      } catch (error) {
-        console.error('Error getting git commit history or diff:', error);
+        if (stderr) {
+          console.error(`stderr: ${stderr}`);
+          return;
+        }
+
+        // Split the output into lines
+        const lines = stdout.split('\n');
+
+        // Loop through each line and check if it contains the package name
+        lines.forEach(line => {
+          // Check if the line contains the package name (you can make this more specific)
+          if (line.includes(packageName)) {
+            // The commit hash is the first part of the line, and the username is the author name
+            const parts = line.trim().split(' ');
+
+            const commitHash = parts[0]; // Commit hash is the first element
+            const author = parts[1]; // Author name is the second element
+
+            console.log(`Package "${packageName}" was added/modified in commit: ${commitHash}`);
+            console.log(`Author: ${author}`);
+            return `Package "${packageName}" was added/modified by: ${author}`;
+          }
+        });
+      });
+    };
+
+    const gatherResults = async (cpath) => {
+      const vulnerabilities = await checkVulnerabilities(cpath);
+      const misconfigurations = await checkMisconfigurations(cpath);
+      const unwantedFiles = await scanDirectory(cpath);
+    
+      // Get git blame for vulnerabilities and misconfigurations
+      for (let vuln of vulnerabilities) {
+        try {
+          const blameInfo = await getGitBlame1(cpath, 'package-lock.json', vuln.name); // Assume each vulnerability has filePath
+          console.log('blameInfo -----',blameInfo);
+          vuln.blame = blameInfo; // Store blame info in the vulnerability object
+        } catch (error) {
+          vuln.blame = `Error retrieving blame info: ${error.message}`;
+        }
       }
+    
+      for (let misconf of misconfigurations) {
+        try {
+          //const blameInfo = await getGitBlame(cpath+'/package-lock.json', cpath); // Assume each misconfiguration has filePath
+          const blameInfo = '';
+          misconf.blame = blameInfo;
+        } catch (error) {
+          misconf.blame = `Error retrieving blame info: ${error.message}`;
+        }
+      }
+    
+      for (let unwanted of unwantedFiles) {
+        try {
+          //const blameInfo = await getGitBlame(cpath+'/package-lock.json', cpath); // Assume each unwanted file has filePath
+          const blameInfo = '';
+          unwanted.blame = blameInfo;
+        } catch (error) {
+          unwanted.blame = `Error retrieving blame info: ${error.message}`;
+        }
+      }
+    
+      return {
+        vulnerabilities,
+        misconfigurations,
+        unwantedFiles
+      };
+    };
+
+    const getResolutionGuidance = (issue) => {
+      let guidance = '';
+    
+      switch (issue.type) {
+        case 'vulnerability':
+          guidance = `Upgrade ${issue.name} to version ${issue.fixAvailable} to resolve the issue.`;
+          break;
+        case 'misconfiguration':
+          guidance = `Update ${issue.file} to remove insecure settings. For example, avoid setting 'debug=true' in production.`;
+          break;
+        case 'unwanted-file':
+          guidance = `Remove unwanted file: ${issue.filePath}. It's generally a good practice to keep configuration files like .env, .git, etc., out of version control.`;
+          break;
+        default:
+          guidance = 'Refer to the documentation for more details.';
+          break;
+      }
+    
+      return guidance;
     };
 
     const checkVulnerabilities = async (cpath) => {
@@ -356,6 +435,7 @@ app.post('/scan', async (req, res) => {
               name: pkgInfo.name,
               severity: pkgInfo.severity,
               range: pkgInfo.range,
+              filepath: cpath,
               fixAvailable: pkgInfo.fixAvailable ? pkgInfo.fixAvailable.version : 'No fix available',
             };
 
@@ -386,20 +466,9 @@ app.post('/scan', async (req, res) => {
             }
             */
 
-            // Check Git history for package.json or package-lock.json
-            const gitHistoryWithDiffs = await getGitCommitHistoryWithDiff('package.json'); // or 'package-lock.json'
-
-            gitHistoryWithDiffs.forEach(({ commit, diff }) => {
-              // If the diff shows changes related to the package (like package version update or package addition)
-              if (diff.includes(vulnerability)) {
-                console.log(`Package ${vulnerability.name} was added/updated in commit by ${commit.author_name} (${commit.date}):`);
-                console.log(`Commit message: ${commit.message}`);
-                console.log(`Diff: ${diff}`);
-                vulnerability.blame = `Package ${vulnerability.name} was added/updated in commit by ${commit.author_name} (${commit.date}):`
-              }
-            });
-            // Get guidance on how to resolve the issue
-            vulnerability.resolutionGuidance = getResolutionGuidance(vulnerability);
+            for (let vuln of vulnerabilities) {
+              vuln.resolutionGuidance = getResolutionGuidance(vuln);
+            }
 
             vulnerabilities.push(vulnerability);
           }
@@ -463,6 +532,11 @@ app.post('/scan', async (req, res) => {
         console.error('Error reading directory:', err);
       }
 
+      for (let unwanted of unwantedFiles) {
+        unwanted.resolutionGuidance = getResolutionGuidance(unwanted);
+        unwanted.filepath = repoPath;
+      }
+
       return unwantedFiles;
     };
 
@@ -471,7 +545,7 @@ app.post('/scan', async (req, res) => {
         const packageJsonDirs = findPackageJsonDirs(clonePath); 
         console.log("packageJsonFiles --",packageJsonDirs);
         // Define functions to gather results for each cpath
-        const gatherResults = async (cpath) => {
+        /*const gatherResults = async (cpath) => {
           const vulnerabilities = await checkVulnerabilities(cpath);
           const misconfigurations = await checkMisconfigurations(cpath);
           const unwantedFiles = await scanDirectory(cpath);
@@ -481,7 +555,7 @@ app.post('/scan', async (req, res) => {
             misconfigurations,
             unwantedFiles
           };
-        };
+        };*/
 
         // Iterate over all cpaths and gather results asynchronously
         const scanResults = { secrets: secretDataFound, misconfigurations: [], vulnerabilities: [], unwantedFiles: [] };
