@@ -3,11 +3,8 @@ const { checkVulnerabilities } = require('../services/checkVulnerabilities');
 const { checkMisconfigurations } = require('../services/checkMisconfigurations');
 const { scanDirectoryForUnwantedFiles } = require('../services/unwantedFiles');
 const { getGitBlame } = require('../services/gitBlame');
+const { gitClone } = require('../services/gitClone');
 const { findPackageJsonDirs } = require('../utils/findPackageJsonDirs');
-const { deleteFolderRecursive } = require('../utils/deleteFolderRecursive');
-
-const simpleGit = require('simple-git');
-const git = simpleGit();
 
 const scanRepository = async (req, res) => {
   const { repoUrl } = req.body;
@@ -17,11 +14,12 @@ const scanRepository = async (req, res) => {
   }
 
   try {
-    const repoName = repoUrl.split('/').pop().replace('.git', '');
+    /*const repoName = repoUrl.split('/').pop().replace('.git', '');
     const clonePath = `/tmp/${repoName}`;
 
     await deleteFolderRecursive(clonePath);
-    await git.clone(repoUrl, clonePath);
+    await git.clone(repoUrl, clonePath);*/
+    const clonePath = await gitClone(repoUrl);
 
     const secretDataFound = await scanForSecrets(clonePath);
     const packageJsonDirs = findPackageJsonDirs(clonePath); 
