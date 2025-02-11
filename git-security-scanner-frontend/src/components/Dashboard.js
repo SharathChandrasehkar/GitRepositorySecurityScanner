@@ -7,7 +7,28 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import 'jspdf-autotable';
 
+import { FaExclamationTriangle, FaExclamationCircle, FaLock, FaFileAlt } from 'react-icons/fa'; // FontAwesome icons
+
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
+
+const SeverityBox = ({ title, count, icon, bgColor }) => (
+  <div className={`col-12 col-md-3 mb-4`}>
+    <div className={`d-flex justify-content-center align-items-center p-3`} style={{ 
+      backgroundColor: bgColor, 
+      borderRadius: '10px', 
+      height: '150px', 
+      boxShadow: '0px 0px 15px rgba(0, 0, 0, 0.1)'
+    }}>
+      <div className="text-center">
+        <div className="mb-3" style={{ fontSize: '50px' }}>
+          {icon}
+        </div>
+        <h5 style={{ color: 'white' }}>{title}</h5>
+        <p style={{ fontSize: '25px', fontWeight: 'bold', color: 'white' }}>{count}</p>
+      </div>
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
   const [repoUrl, setRepoUrl] = useState('');
@@ -317,7 +338,41 @@ const Dashboard = () => {
       {/* Display Scan Results */}
       {scanResults && !loading && (
         <>
-          <Row className="mt-5" ref={chartsRef}>
+        <Row className="mt-5" ref={chartsRef}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Overview of Issues</h5>
+              <div className="row">
+                <SeverityBox
+                  title="Vulnerabilities"
+                  count={scanResults.vulnerabilities?.length}
+                  icon={<FaExclamationTriangle />}
+                  bgColor="#dc3545" // Red for vulnerabilities
+                />
+                <SeverityBox
+                  title="Misconfigurations"
+                  count={scanResults.misconfigurations?.length}
+                  icon={<FaExclamationCircle />}
+                  bgColor="#ffc107" // Yellow for misconfigurations
+                />
+                <SeverityBox
+                  title="Unwanted Files"
+                  count={scanResults.unwantedFiles?.length}
+                  icon={<FaFileAlt />}
+                  bgColor="#17a2b8" // Blue for unwanted files
+                />
+                <SeverityBox
+                  title="Secrets"
+                  count={scanResults.secrets?.length}
+                  icon={<FaLock />}
+                  bgColor="#28a745" // Green for secrets
+                />
+              </div>
+            </Card.Body>
+          </Card>
+        </Row>
+        
+        <Row className="mt-5" ref={chartsRef}>
           <Col md={6}>
               <Card className="mb-4">
                 <Card.Body>
