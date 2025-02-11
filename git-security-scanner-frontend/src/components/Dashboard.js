@@ -7,7 +7,28 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import 'jspdf-autotable';
 
+import { FaExclamationTriangle, FaExclamationCircle, FaLock, FaFileAlt } from 'react-icons/fa'; // FontAwesome icons
+
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
+
+const SeverityBox = ({ title, count, icon, bgColor }) => (
+  <div className={`col-12 col-md-3 mb-4`}>
+    <div className={`d-flex justify-content-center align-items-center p-3`} style={{ 
+      backgroundColor: bgColor, 
+      borderRadius: '10px', 
+      height: '150px', 
+      boxShadow: '0px 0px 15px rgba(0, 0, 0, 0.1)'
+    }}>
+      <div className="text-center">
+        <div className="mb-3" style={{ fontSize: '50px' }}>
+          {icon}
+        </div>
+        <h5 style={{ color: 'white' }}>{title}</h5>
+        <p style={{ fontSize: '25px', fontWeight: 'bold', color: 'white' }}>{count}</p>
+      </div>
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
   const [repoUrl, setRepoUrl] = useState('');
@@ -34,23 +55,6 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-
-  const unwantedPatterns = [
-    '.env',
-    '.git/',
-    '.log',
-    'node_modules/',
-    '.vscode/',
-    '.idea/',
-    '.DS_Store',
-    'Thumbs.db',
-    '*.bak',
-    '*.swp',
-    '*.sqlite3',
-    '*.db',
-    'dist/',
-    'build/'
-  ];
 
   // Prepare data for the bar chart
   const prepareBarChartData = () => {
@@ -317,7 +321,41 @@ const Dashboard = () => {
       {/* Display Scan Results */}
       {scanResults && !loading && (
         <>
-          <Row className="mt-5" ref={chartsRef}>
+        <Row className="mt-5" ref={chartsRef}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Overview of Issues</h5>
+              <div className="row">
+                <SeverityBox
+                  title="Vulnerabilities"
+                  count={scanResults.vulnerabilities?.length}
+                  icon={<FaExclamationTriangle />}
+                  bgColor="#dc3545" // Red for vulnerabilities
+                />
+                <SeverityBox
+                  title="Misconfigurations"
+                  count={scanResults.misconfigurations?.length}
+                  icon={<FaExclamationCircle />}
+                  bgColor="#ffc107" // Yellow for misconfigurations
+                />
+                <SeverityBox
+                  title="Unwanted Files"
+                  count={scanResults.unwantedFiles?.length}
+                  icon={<FaFileAlt />}
+                  bgColor="#17a2b8" // Blue for unwanted files
+                />
+                <SeverityBox
+                  title="Secrets"
+                  count={scanResults.secrets?.length}
+                  icon={<FaLock />}
+                  bgColor="#28a745" // Green for secrets
+                />
+              </div>
+            </Card.Body>
+          </Card>
+        </Row>
+        
+        <Row className="mt-5" ref={chartsRef}>
           <Col md={6}>
               <Card className="mb-4">
                 <Card.Body>
@@ -380,139 +418,148 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-          <Row>
-            {/* Display Secrets */}
-            <Col md={4}>
-              {(scanResults.secrets?.length || 0) > 0 ? (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Secrets Found</h5>
-                    <small>One of these secrets are exposed: API_KEY|SECRET_KEY|PASSWORD|TOKEN in these files </small>
-                    <ul>
-                      {scanResults.secrets.map((secret, index) => (
-                        <li key={index}>
-                          <strong>{secret}</strong><br />
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>No Secrets Found</h5>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
+          {/* Display Secrets */}
+          <Row className="mt-5" ref={chartsRef}>
+          <Col md={6}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Secrets</h5>
+              
+              <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Secret</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.secrets.map((secret, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{secret}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
 
-            {/* Display Unwanted Files */}
-            <Col md={4}>
-              {(scanResults.unwantedFiles?.length || 0) > 0 ? (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Unwanted Files Found</h5>
-                    {/* Small font note in a single line under the header */}
-                    <small className="text-muted d-block mt-2">
-                      Note: The application checks for files matching these patterns: 
-                      {unwantedPatterns.join(', ')}.
-                    </small>
-                    <ul>
-                      {scanResults.unwantedFiles.map((unwantedFile, index) => (
-                        <li key={index}>{unwantedFile}
-                        Resolution Guidance: {unwantedFile.resolutionGuidance}<br />
-                          {/* Display Git Blame if available */}
-                          {unwantedFile.blame ? (
-                            <>
-                              <br />
-                              <strong>Git Blame:</strong> <pre>{unwantedFile.blame}</pre>
-                            </>
-                          ) : (
-                            <span>No Git Blame available for this vulnerability.</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>No unwanted Files found</h5>
-                    {/* Small font note in a single line under the header */}
-                    <small className="text-muted d-block mt-2">
-                      Note: The application checks for files matching these patterns: 
-                      {unwantedPatterns.join(', ')}.
-                    </small>
-                  </Card.Body>
-                </Card>
-              )}              
-            </Col>
-
-            {/* Display Misconfigurations */}
-            <Col md={4}>
-              {scanResults.misconfigurations?.length > 0 ? (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Misconfigurations Found</h5>
-                    <ul>
-                      {scanResults.misconfigurations.map((misconfig, index) => (
-                        <li key={index}>
-                          <strong>{misconfig}</strong>
-                          Resolution Guidance: {misconfig.resolutionGuidance}<br />
-                          {/* Display Git Blame if available */}
-                          {misconfig.blame ? (
-                            <>
-                              <br />
-                              <strong>Git Blame:</strong> <pre>{misconfig.blame}</pre>
-                            </>
-                          ) : (
-                            <span>No Git Blame available for this vulnerability.</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>No Misconfigured Data Found</h5>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
+          {/* Display Misconfigurations */}
+          <Col md={6}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Misconfigurations</h5>
+              
+              <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Misconfiguration</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Git Blame</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.secrets.map((misconfig, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{misconfig}</td>
+                        <td>{misconfig.resolutionGuidance}</td>
+                        <td>{misconfig.blame}</td>                        
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
           </Row>
 
-          <Row>
-            <Col md={12}>
-              {(scanResults.vulnerabilities?.length || 0) > 0 && (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Vulnerabilities Found</h5>
-                    <ul>
-                      {scanResults.vulnerabilities.map((vuln, index) => (
-                        <li key={index}>
-                          <strong>{vuln.name}</strong> (Severity: {vuln.severity})<br />
-                          Affected Version Range: {vuln.range}<br />
-                          Fix Available: {vuln.fixAvailable ? 'Yes' : 'No'}<br />
-                          Resolution Guidance: {vuln.resolutionGuidance}<br />
-                          {/* Display Git Blame if available */}
-                          {vuln.blame ? (
-                            <>
-                              <br />
-                              <strong>Git Blame:</strong> <pre>{vuln.blame}</pre>
-                            </>
-                          ) : (
-                            <span>No Git Blame available for this vulnerability.</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
+          {/* Display Unwanted Files */}
+          <Row className="mt-5" ref={chartsRef}>
+          <Col md={6}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Unwanted Files</h5>
+              
+              <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Unwanted File</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Resolution Guidance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.unwantedFiles.map((unwantedFile, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{unwantedFile}</td>
+                        <td>{unwantedFile.resolutionGuidance}</td>                       
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
+          </Row>
+
+          {/* Display Vulnerabilities */}
+          <Row className="mt-5" ref={chartsRef}>
+          <Col md={12}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Vulnerabilities</h5>
+              
+              <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, wrappable:false, backgroundColor: 'white', color: 'blue'}}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Vulnerability</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Severity</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Affected Version Range</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Fix Available</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Git Blame</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.vulnerabilities.map((vuln, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{vuln.name}</td>
+                        {/* Severity as button */}
+                        <td>
+                          <button
+                            className={`btn ${vuln.severity === 'high' ? 'btn-danger' : 
+                                      vuln.severity === 'moderate' ? 'btn-warning' : 
+                                      'btn-secondary'}`}
+                            style={{ padding: '5px 15px' }}
+                          >
+                            {vuln.severity}
+                          </button>
+                        </td>
+                        <td>{vuln.range}</td>
+                        <td>{vuln.fixAvailable ? 'Yes' : 'No'}</td>
+                        <td>{vuln.resolutionGuidance}</td>
+                        <td>{vuln.blame ? vuln.blame : 'No Git Blame available for this vulnerability.'}</td>                    
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
           </Row>
         </>
       )}
