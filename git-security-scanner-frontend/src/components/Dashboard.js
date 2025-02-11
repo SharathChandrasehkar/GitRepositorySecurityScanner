@@ -380,6 +380,99 @@ const Dashboard = () => {
             </Col>
           </Row>
 
+          <Row className="mt-5" ref={chartsRef}>
+          <Col md={6}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Secrets</h5>
+              
+              <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Secret</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.secrets.map((secret, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{secret}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
+
+          <Col md={6}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Misconfigurations</h5>
+              
+              <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Misconfiguration</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Git Blame</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.secrets.map((misconfig, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{misconfig}</td>
+                        <td>{misconfig.resolutionGuidance}</td>
+                        <td>{misconfig.blame}</td>                        
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
+          </Row>
+
+
+          <Row className="mt-5" ref={chartsRef}>
+          <Col md={6}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Unwanted Files</h5>
+              
+              <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Unwanted File</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Resolution Guidance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.unwantedFiles.map((unwantedFile, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{unwantedFile}</td>
+                        <td>{unwantedFile.resolutionGuidance}</td>                       
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
+          </Row>
+
+
           <Row>
             {/* Display Secrets */}
             <Col md={4}>
@@ -482,6 +575,55 @@ const Dashboard = () => {
                 </Card>
               )}
             </Col>
+          </Row>
+
+          <Row className="mt-5" ref={chartsRef}>
+          <Col md={12}>
+          <Card className="mb-3">
+            <Card.Body>
+              <h5>Vulnerabilities</h5>
+              
+              <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}>
+                <table className="table table-striped">
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, wrappable:false, backgroundColor: 'white', color: 'blue'}}>
+                    <tr>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Vulnerability</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Severity</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Affected Version Range</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Fix Available</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Git Blame</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scanResults.vulnerabilities.map((vuln, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{vuln.name}</td>
+                        {/* Severity as button */}
+                        <td>
+                          <button
+                            className={`btn ${vuln.severity === 'high' ? 'btn-danger' : 
+                                      vuln.severity === 'moderate' ? 'btn-warning' : 
+                                      'btn-secondary'}`}
+                            style={{ padding: '5px 15px' }}
+                          >
+                            {vuln.severity}
+                          </button>
+                        </td>
+                        <td>{vuln.range}</td>
+                        <td>{vuln.fixAvailable ? 'Yes' : 'No'}</td>
+                        <td>{vuln.resolutionGuidance}</td>
+                        <td>{vuln.blame ? vuln.blame : 'No Git Blame available for this vulnerability.'}</td>                    
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+          </Col>
           </Row>
 
           <Row>
