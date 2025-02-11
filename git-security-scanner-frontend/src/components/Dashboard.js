@@ -56,23 +56,6 @@ const Dashboard = () => {
     }
   };
 
-  const unwantedPatterns = [
-    '.env',
-    '.git/',
-    '.log',
-    'node_modules/',
-    '.vscode/',
-    '.idea/',
-    '.DS_Store',
-    'Thumbs.db',
-    '*.bak',
-    '*.swp',
-    '*.sqlite3',
-    '*.db',
-    'dist/',
-    'build/'
-  ];
-
   // Prepare data for the bar chart
   const prepareBarChartData = () => {
     if (!scanResults) return {};
@@ -435,6 +418,7 @@ const Dashboard = () => {
             </Col>
           </Row>
 
+          {/* Display Secrets */}
           <Row className="mt-5" ref={chartsRef}>
           <Col md={6}>
           <Card className="mb-3">
@@ -463,6 +447,7 @@ const Dashboard = () => {
           </Card>
           </Col>
 
+          {/* Display Misconfigurations */}
           <Col md={6}>
           <Card className="mb-3">
             <Card.Body>
@@ -495,7 +480,7 @@ const Dashboard = () => {
           </Col>
           </Row>
 
-
+          {/* Display Unwanted Files */}
           <Row className="mt-5" ref={chartsRef}>
           <Col md={6}>
           <Card className="mb-3">
@@ -527,111 +512,7 @@ const Dashboard = () => {
           </Col>
           </Row>
 
-
-          <Row>
-            {/* Display Secrets */}
-            <Col md={4}>
-              {(scanResults.secrets?.length || 0) > 0 ? (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Secrets Found</h5>
-                    <small>One of these secrets are exposed: API_KEY|SECRET_KEY|PASSWORD|TOKEN in these files </small>
-                    <ul>
-                      {scanResults.secrets.map((secret, index) => (
-                        <li key={index}>
-                          <strong>{secret}</strong><br />
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>No Secrets Found</h5>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
-
-            {/* Display Unwanted Files */}
-            <Col md={4}>
-              {(scanResults.unwantedFiles?.length || 0) > 0 ? (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Unwanted Files Found</h5>
-                    {/* Small font note in a single line under the header */}
-                    <small className="text-muted d-block mt-2">
-                      Note: The application checks for files matching these patterns: 
-                      {unwantedPatterns.join(', ')}.
-                    </small>
-                    <ul>
-                      {scanResults.unwantedFiles.map((unwantedFile, index) => (
-                        <li key={index}>{unwantedFile}
-                        Resolution Guidance: {unwantedFile.resolutionGuidance}<br />
-                          {/* Display Git Blame if available */}
-                          {unwantedFile.blame ? (
-                            <>
-                              <br />
-                              <strong>Git Blame:</strong> <pre>{unwantedFile.blame}</pre>
-                            </>
-                          ) : (
-                            <span>No Git Blame available for this vulnerability.</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>No unwanted Files found</h5>
-                    {/* Small font note in a single line under the header */}
-                    <small className="text-muted d-block mt-2">
-                      Note: The application checks for files matching these patterns: 
-                      {unwantedPatterns.join(', ')}.
-                    </small>
-                  </Card.Body>
-                </Card>
-              )}              
-            </Col>
-
-            {/* Display Misconfigurations */}
-            <Col md={4}>
-              {scanResults.misconfigurations?.length > 0 ? (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Misconfigurations Found</h5>
-                    <ul>
-                      {scanResults.misconfigurations.map((misconfig, index) => (
-                        <li key={index}>
-                          <strong>{misconfig}</strong>
-                          Resolution Guidance: {misconfig.resolutionGuidance}<br />
-                          {/* Display Git Blame if available */}
-                          {misconfig.blame ? (
-                            <>
-                              <br />
-                              <strong>Git Blame:</strong> <pre>{misconfig.blame}</pre>
-                            </>
-                          ) : (
-                            <span>No Git Blame available for this vulnerability.</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>No Misconfigured Data Found</h5>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
-          </Row>
-
+          {/* Display Vulnerabilities */}
           <Row className="mt-5" ref={chartsRef}>
           <Col md={12}>
           <Card className="mb-3">
@@ -679,37 +560,6 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
           </Col>
-          </Row>
-
-          <Row>
-            <Col md={12}>
-              {(scanResults.vulnerabilities?.length || 0) > 0 && (
-                <Card className="mb-3">
-                  <Card.Body>
-                    <h5>Vulnerabilities Found</h5>
-                    <ul>
-                      {scanResults.vulnerabilities.map((vuln, index) => (
-                        <li key={index}>
-                          <strong>{vuln.name}</strong> (Severity: {vuln.severity})<br />
-                          Affected Version Range: {vuln.range}<br />
-                          Fix Available: {vuln.fixAvailable ? 'Yes' : 'No'}<br />
-                          Resolution Guidance: {vuln.resolutionGuidance}<br />
-                          {/* Display Git Blame if available */}
-                          {vuln.blame ? (
-                            <>
-                              <br />
-                              <strong>Git Blame:</strong> <pre>{vuln.blame}</pre>
-                            </>
-                          ) : (
-                            <span>No Git Blame available for this vulnerability.</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
           </Row>
         </>
       )}
