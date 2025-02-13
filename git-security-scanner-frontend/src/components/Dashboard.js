@@ -117,7 +117,7 @@ function Dashboard({ scanResults }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {scanResults.secrets.map((misconfig, index) => (
+                    {scanResults.misconfigurations.map((misconfig, index) => (
                       <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{misconfig}</td>
