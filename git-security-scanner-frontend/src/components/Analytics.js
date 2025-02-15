@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
 import { Container, Row, Col, Card } from "react-bootstrap"; // Include any other necessary imports
@@ -6,9 +6,18 @@ import 'jspdf-autotable';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
 
-function Analytics({ scanResults }) {
+function Analytics({ scanResults, analyticsChartsRef }) {
     const [loading] = useState(false);
 
+
+    useEffect(() => {
+        
+        if (analyticsChartsRef.current) {
+            console.log('Analytics charts ref:', analyticsChartsRef.current);
+          } else {
+            console.log('analyticsChartsRef is null');
+          }
+      }, [analyticsChartsRef]);
 
     // Prepare data for the bar chart
   const prepareBarChartData = () => {
@@ -64,8 +73,8 @@ function Analytics({ scanResults }) {
       {/* Display Scan Results */}
       {scanResults && !loading && (
         <>        
-        <Row className="mt-5">
-          <Col md={6}>
+        <Row className="mt-5" ref={analyticsChartsRef}>
+          <Col md={8}>
               <Card className="mb-4">
                 <Card.Body>
                   <h5>Count of Issues</h5>
@@ -102,8 +111,7 @@ function Analytics({ scanResults }) {
                 </Card.Body>
               </Card>
             </Col>
-
-            <Col md={6}>
+            <Col md={4}>
               <Card className="mb-4">
                 <Card.Body>
                   <h5>Distribution of Issues</h5>

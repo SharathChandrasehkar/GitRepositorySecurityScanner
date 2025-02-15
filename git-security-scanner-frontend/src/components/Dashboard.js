@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
 import { Container, Row, Col, Card } from "react-bootstrap"; // Include any other necessary imports
 import 'jspdf-autotable';
@@ -25,51 +25,62 @@ const SeverityBox = ({ title, count, icon, bgColor }) => (
   </div>
 );
 
-function Dashboard({ scanResults }) {
+function Dashboard({ scanResults, dashboardChartsRef }) {
   const [loading] = useState(false);
+
+  useEffect(() => {
+    if (dashboardChartsRef.current) {
+      console.log('Dashboard charts ref:', dashboardChartsRef.current);
+    }
+  }, [dashboardChartsRef]);
+
   if (!scanResults) {
     return <div>No scan results available.</div>; // Display a message if there are no scan results
   }
   
   return (
-    <Container className="mt-4">      
-
+    
+    <Container className="mt-5">      
+    
       {/* Display Scan Results */}
       {scanResults && !loading && (
         <>
-        <Row className="mt-5">
-          <Card className="mb-3">
+        <Row className="mt-3" ref={dashboardChartsRef}>
+          <Col md={12}>
+          <Card className="mb-3" style={{ borderRadius: '10px', transition: 'all 0.3s ease' }}>
             <Card.Body>
-              <h5>Overview of Issues</h5>
+              <h5 className="fw-bold" style={{ fontSize: '1.25rem', color: '#212529' }}>Overview of Issues</h5>
               <div className="row">
                 <SeverityBox
-                  title="Vulnerabilities"
+                  title={<span style={{ color: '#212529' }}>Vulnerabilities</span>}
                   count={scanResults.vulnerabilities?.length}
-                  icon={<FaExclamationTriangle />}
-                  bgColor="#dc3545" // Red for vulnerabilities
+                  icon={<FaExclamationTriangle style={{ color: 'rgba(245, 12, 8, 0.56)' }} />}
+                  bgColor="rgba(255, 88, 85, 0.56)"
                 />
                 <SeverityBox
-                  title="Misconfigurations"
+                  title={<span style={{ color: '#212529' }}>Misconfigurations</span>}
                   count={scanResults.misconfigurations?.length}
-                  icon={<FaExclamationCircle />}
-                  bgColor="#ffc107" // Yellow for misconfigurations
+                  icon={<FaExclamationCircle style={{ color: 'rgba(246, 194, 6, 0.88)' }} />}
+                  bgColor="rgba(255, 213, 61, 0.57)"
                 />
                 <SeverityBox
-                  title="Unwanted Files"
+                  title={<span style={{ color: '#212529' }}>Unwanted Files</span>}
                   count={scanResults.unwantedFiles?.length}
-                  icon={<FaFileAlt />}
-                  bgColor="#17a2b8" // Blue for unwanted files
+                  icon={<FaFileAlt style={{ color: 'rgb(10, 128, 247)' }} />} 
+                  bgColor="rgba(40, 190, 210, 0.53)"
                 />
                 <SeverityBox
-                  title="Secrets"
+                  title={<span style={{ color: '#212529' }}>Secrets</span>} 
                   count={scanResults.secrets?.length}
-                  icon={<FaLock />}
-                  bgColor="#28a745" // Green for secrets
+                  icon={<FaLock style={{ color: 'rgba(17, 245, 9, 0.98)' }} />}
+                  bgColor="rgba(50, 210, 90, 0.53)"
                 />
               </div>
             </Card.Body>
           </Card>
+          </Col>
         </Row>
+
 
         {/* Display Secrets */}
         <Row className="mt-5" >
@@ -80,17 +91,19 @@ function Dashboard({ scanResults }) {
               
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>#</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' }}>Secret</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' }}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' }}>Secret</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' }}>Git Blame</th>
                     </tr>
                   </thead>
                   <tbody>
                     {scanResults.secrets.map((secret, index) => (
                       <tr key={index}>
                         <td>{index + 1}</td>
-                        <td>{secret}</td>
+                        <td>{secret.name}</td>
+                        <td>{secret.blame}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -108,12 +121,12 @@ function Dashboard({ scanResults }) {
               
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Misconfiguration</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Misconfiguration</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -139,11 +152,12 @@ function Dashboard({ scanResults }) {
               
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#007bff',  color: 'white' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Unwanted File</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Unwanted File</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -151,7 +165,8 @@ function Dashboard({ scanResults }) {
                       <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{unwantedFile}</td>
-                        <td>{unwantedFile.resolutionGuidance}</td>                       
+                        <td>{unwantedFile.resolutionGuidance}</td>
+                        <td>{unwantedFile.blame}</td>                  
                       </tr>
                     ))}
                   </tbody>
@@ -171,15 +186,15 @@ function Dashboard({ scanResults }) {
               
               <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, wrappable:false, backgroundColor: 'white', color: 'blue'}}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, wrappable:false, backgroundColor: '#212529', color: 'blue'}}>
                     <tr>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Vulnerability</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Severity</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Affected Version Range</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Fix Available</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
-                      <th style={{ backgroundColor: '#007bff', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Vulnerability</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Severity</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Affected Version Range</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Fix Available</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
                     </tr>
                   </thead>
                   <tbody>
