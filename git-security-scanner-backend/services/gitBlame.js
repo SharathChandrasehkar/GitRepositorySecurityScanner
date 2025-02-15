@@ -1,5 +1,6 @@
 const { promisify } = require('util');
 const { exec } = require('child_process');
+const path = require('path');
 
 const getGitBlame = async (filePath, fileName, searchPattern) => {
     try {
@@ -21,12 +22,12 @@ const getGitBlame = async (filePath, fileName, searchPattern) => {
           for (const line of lines) {
             // Check if the line contains the package name
             if (line.includes(searchPattern)) {
-              console.log(`line: ${line}`);
+              //console.log(`line: ${line}`);
 
               let result = line.match(/\((.*?)\)/);
 
               if (result) {
-                console.log(result[1]);  // Output: "world"
+                //console.log(result[1]);  // Output: "world"
                 // The commit hash is the first part of the line, and the username is the author name
                 const parts = result[1].trim().split(' ');
 

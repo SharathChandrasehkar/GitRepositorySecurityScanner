@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Box } from "@mui/material";
 import Sidebar from "./components/Sidebar";
@@ -10,6 +10,8 @@ import Analytics from "./components/Analytics";
 const App = () => {
   const [selectedTab, setSelectedTab] = useState("Dashboard");
   const [scanResults, setScanResults] = useState(null);
+  const dashboardChartsRef = useRef(null);
+  const analyticsChartsRef = useRef(null);
 
   return (
     <Router>
@@ -18,12 +20,12 @@ const App = () => {
         <Sidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
 
         <Box component="main" flexGrow={1}>
-        <TopBar setScanResults={setScanResults} /> {/* Pass setScanResults to TopBar */}
+        <TopBar setScanResults={setScanResults} scanResults={scanResults} dashboardChartsRef={dashboardChartsRef} analyticsChartsRef={analyticsChartsRef}/> {/* Pass setScanResults to TopBar */}
         
           {/* Routes for Dashboard and Analytics */}
           <Routes>
-            <Route path="/dashboard" element={<Dashboard scanResults={scanResults}/>} />
-            <Route path="/analytics" element={<Analytics scanResults={scanResults}/>} />
+            <Route path="/dashboard" element={<Dashboard scanResults={scanResults} dashboardChartsRef={dashboardChartsRef}/>} />
+            <Route path="/analytics" element={<Analytics scanResults={scanResults} analyticsChartsRef={analyticsChartsRef}/>} />
           </Routes>
         </Box>
       </Box>

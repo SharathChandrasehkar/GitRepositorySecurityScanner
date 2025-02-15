@@ -7,8 +7,8 @@ function Sidebar({ selectedTab, setSelectedTab }) {
   return (
     <Box
       sx={{
-        width: 240,
-        backgroundColor: "#f4f4f4",
+        width: 200,
+        backgroundColor: "#ffffff",
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -17,7 +17,7 @@ function Sidebar({ selectedTab, setSelectedTab }) {
     >
       {/* App Icon at the top */}
       <Box sx={{ paddingBottom: 2 }}>
-        <img src={appIcon} alt="App Icon" style={{ width: 60, height: 60 }} />
+        <img src={appIcon} alt="App Icon" style={{ width: 200, height: 200 }} />
       </Box>
 
       {/* Dashboard Tab */}

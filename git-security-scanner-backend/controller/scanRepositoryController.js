@@ -35,6 +35,7 @@ const scanRepository = async (req, res) => {
       scanResults.unwantedFiles.push(...results.unwantedFiles);
     }
 
+    console.log("secretDataFound --",secretDataFound);
     // Send results back to the frontend
     res.json(scanResults);
   } catch (error) {
@@ -69,7 +70,7 @@ const gatherResults = async (cpath) => {
     }
   }
 
-  for (let unwanted of unwantedFiles) {
+  /*for (let unwanted of unwantedFiles) {
     try {
       //const blameInfo = await getGitBlame(cpath+'/package-lock.json', cpath); // Assume each unwanted file has filePath
       const blameInfo = '';
@@ -77,7 +78,7 @@ const gatherResults = async (cpath) => {
     } catch (error) {
       unwanted.blame = `Error retrieving blame info: ${error.message}`;
     }
-  }
+  }*/
 
   return {
     vulnerabilities,

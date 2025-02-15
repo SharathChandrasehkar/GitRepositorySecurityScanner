@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { getGitBlame } = require('./gitBlame');
 
 const unwantedPatterns = [
   '.env',
@@ -25,15 +26,20 @@ const scanDirectoryForUnwantedFiles = async (dirPath) => {
     const files = await fs.promises.readdir(dirPath);
 
     for (let file of files) {
-      const filePath = path.join(dirPath, file);
-      const stat = await fs.promises.stat(filePath);
+      const fullPath = path.join(dirPath, file);
+      console.log('fullPath ---',fullPath);
+      const stat = await fs.promises.stat(fullPath);
 
-      if (unwantedPatterns.some(pattern => filePath.includes(pattern))) {
-        unwantedFiles.push(filePath);
+      if (unwantedPatterns.some(pattern => fullPath.includes(pattern))) {
+        unwantedFiles.fullPath = fullPath;
+        //const filePath = path.dirname(fullPath);
+        //const fileName = path.basename(fullPath);    
+        //const blameInfo = await getGitBlame(filePath, fileName, pattern);
+        //unwantedFiles.blame = blameInfo;
       }
 
       if (stat.isDirectory()) {
-        const subDirFiles = await scanDirectoryForUnwantedFiles(filePath);
+        const subDirFiles = await scanDirectoryForUnwantedFiles(fullPath);
         unwantedFiles = unwantedFiles.concat(subDirFiles);
       }
     }
