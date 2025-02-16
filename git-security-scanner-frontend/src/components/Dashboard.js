@@ -213,7 +213,7 @@ function Dashboard({ scanResults }) {
             <Button
               onClick={generatePDF}
               variant="primary"
-              className="mx-1" style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}
+              className="mx-1" style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
               disabled={loading || !scanResults}
             >
               {loading ? <Spinner animation="border" size="sm" /> : 'Export Dashboard Report'}
@@ -225,30 +225,30 @@ function Dashboard({ scanResults }) {
           <Col md={12}>
           <Card className="mb-1" style={{ borderRadius: '10px', transition: 'all 0.3s ease' }}>
             <Card.Body>
-              <h5 className="mb-1" style={{ fontSize: '1.25rem', color: '#212529' }}>Overview of Issues</h5>
+              <h5 className="mb-1" style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Overview of Issues</h5>
               <div className="row">
                 <SeverityBox
-                  title={<span style={{ color: '#212529' }}>Vulnerabilities</span>}
+                  title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Vulnerabilities</span>}
                   count={scanResults.vulnerabilities?.length}
-                  icon={<FaExclamationTriangle style={{ color: 'rgba(245, 12, 8, 0.56)' }} />}
+                  icon={<FaExclamationTriangle style={{ color: 'rgba(245, 12, 8, 0.56)', fontFamily: 'Futura, sans-serif'}} />}
                   bgColor="rgba(255, 88, 85, 0.56)"
                 />
                 <SeverityBox
-                  title={<span style={{ color: '#212529' }}>Misconfigurations</span>}
+                  title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Misconfigurations</span>}
                   count={scanResults.misconfigurations?.length}
-                  icon={<FaExclamationCircle style={{ color: 'rgba(246, 194, 6, 0.88)' }} />}
+                  icon={<FaExclamationCircle style={{ color: 'rgba(246, 194, 6, 0.88)', fontFamily: 'Futura, sans-serif' }} />}
                   bgColor="rgba(255, 213, 61, 0.57)"
                 />
                 <SeverityBox
-                  title={<span style={{ color: '#212529' }}>Unwanted Files</span>}
+                  title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Unwanted Files</span>}
                   count={scanResults.unwantedFiles?.length}
-                  icon={<FaFileAlt style={{ color: 'rgb(10, 128, 247)' }} />} 
+                  icon={<FaFileAlt style={{ color: 'rgb(10, 128, 247)', fontFamily: 'Futura, sans-serif' }} />} 
                   bgColor="rgba(40, 190, 210, 0.53)"
                 />
                 <SeverityBox
-                  title={<span style={{ color: '#212529' }}>Secrets</span>} 
+                  title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Secrets</span>} 
                   count={scanResults.secrets?.length}
-                  icon={<FaLock style={{ color: 'rgba(17, 245, 9, 0.98)' }} />}
+                  icon={<FaLock style={{ color: 'rgba(17, 245, 9, 0.98)', fontFamily: 'Futura, sans-serif' }} />}
                   bgColor="rgba(50, 210, 90, 0.53)"
                 />
               </div>
@@ -264,15 +264,15 @@ function Dashboard({ scanResults }) {
           <Col md={4}>
           <Card className="mb-1">
             <Card.Body>
-              <h5>Secrets</h5>
+              <h5 style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Secrets</h5>
               
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' }}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' }}>Secret</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' }}>Git Blame</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' }}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' }}>File Name</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' }}>File Path</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -280,7 +280,7 @@ function Dashboard({ scanResults }) {
                       <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{secret.name}</td>
-                        <td>{secret.blame}</td>
+                        <td>{secret.fullPath}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -294,25 +294,23 @@ function Dashboard({ scanResults }) {
           <Col md={4}>
           <Card className="mb-1">
             <Card.Body>
-              <h5>Misconfigurations</h5>
+              <h5 style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Misconfigurations</h5>
               
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Misconfiguration</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Issue Found</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Name</th>
                     </tr>
                   </thead>
                   <tbody>
                     {scanResults.misconfigurations.map((misconfig, index) => (
                       <tr key={index}>
                         <td>{index + 1}</td>
-                        <td>{misconfig}</td>
-                        <td>{misconfig.resolutionGuidance}</td>
-                        <td>{misconfig.blame}</td>                        
+                        <td>{misconfig.message}</td>
+                        <td>{misconfig.name}</td>                     
                       </tr>
                     ))}
                   </tbody>
@@ -325,25 +323,23 @@ function Dashboard({ scanResults }) {
           <Col md={4}>
           <Card className="mb-1">
             <Card.Body>
-              <h5>Unwanted Files</h5>
+              <h5 style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Unwanted Files</h5>
               
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white' }}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Unwanted File</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Name</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Path</th>
                     </tr>
                   </thead>
                   <tbody>
                     {scanResults.unwantedFiles.map((unwantedFile, index) => (
                       <tr key={index}>
                         <td>{index + 1}</td>
-                        <td>{unwantedFile}</td>
-                        <td>{unwantedFile.resolutionGuidance}</td>
-                        <td>{unwantedFile.blame}</td>                  
+                        <td>{unwantedFile.name}</td>
+                        <td>{unwantedFile.fullPath}</td>                 
                       </tr>
                     ))}
                   </tbody>
@@ -359,19 +355,19 @@ function Dashboard({ scanResults }) {
           <Col md={12}>
           <Card className="mb-1">
             <Card.Body>
-              <h5>Vulnerabilities</h5>
+              <h5 style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Vulnerabilities</h5>
               
               <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
-                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, wrappable:false, backgroundColor: '#212529', color: 'blue'}}>
+                  <thead style={{ position: 'sticky', top: 0, zIndex: 1, wrappable:false, backgroundColor: '#212529', color: 'blue', fontFamily: 'Futura, sans-serif'}}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Vulnerability</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Severity</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Affected Version Range</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Fix Available</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}>Git Blame</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Vulnerability</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Severity</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Affected Version Range</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Fix Available</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Commit History</th>
                     </tr>
                   </thead>
                   <tbody>

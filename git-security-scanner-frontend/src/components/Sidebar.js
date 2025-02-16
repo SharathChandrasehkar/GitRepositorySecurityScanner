@@ -17,7 +17,9 @@ function Sidebar({ selectedTab, setSelectedTab }) {
     >
       {/* App Icon at the top */}
       <Box sx={{ paddingBottom: 2 }}>
-        <img src={appIcon} alt="App Icon" style={{ width: 200, height: 200 }} />
+        <Link to="/"> {/* Use the Link component and set the destination path to home */}
+          <img src={appIcon} alt="App Icon" style={{ width: 200, height: 200 }} />
+        </Link>
       </Box>
 
       {/* Dashboard Tab */}
@@ -26,6 +28,7 @@ function Sidebar({ selectedTab, setSelectedTab }) {
         to="/dashboard"
         onClick={() => setSelectedTab("Dashboard")}
         fullWidth
+        style={{fontFamily: 'Futura, sans-serif'}}
         sx={{
           textTransform: 'none',
           backgroundColor: selectedTab === "Dashboard" ? "#3f51b5" : "transparent",
@@ -43,6 +46,7 @@ function Sidebar({ selectedTab, setSelectedTab }) {
         to="/analytics"
         onClick={() => setSelectedTab("Analytics")}
         fullWidth
+        style={{fontFamily: 'Futura, sans-serif'}}
         sx={{
           textTransform: 'none',
           backgroundColor: selectedTab === "Analytics" ? "#3f51b5" : "transparent",

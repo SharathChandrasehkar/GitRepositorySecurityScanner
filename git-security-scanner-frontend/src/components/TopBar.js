@@ -42,6 +42,7 @@ function TopBar({ setScanResults }) {
         <Col xs={12} sm={8} md={6} lg={6}>
           <Form.Control
             type="text"
+            style={{ fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
             placeholder="Enter GitHub Repo URL"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
@@ -51,7 +52,7 @@ function TopBar({ setScanResults }) {
           <Button
             onClick={handleScan}
             variant="primary"
-            className="mx-3" style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}
+            className="mx-3" style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
             disabled={loading || !repoUrl}
           >
             {loading ? <Spinner animation="border" size="sm" /> : 'Scan Repo'}
