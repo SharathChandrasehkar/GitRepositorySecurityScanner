@@ -71,7 +71,7 @@ function Analytics({ scanResults }) {
     
             doc.autoTable({
             head: [['#', 'Secret']],
-            body: scanResults.secrets.map((secret, index) => [index + 1, secret]),
+            body: scanResults.secrets.map((secret, index) => [index + 1, secret.name]),
             startY: currentY,
             theme: 'striped',
             headStyles: { fillColor: [22, 160, 133] },
