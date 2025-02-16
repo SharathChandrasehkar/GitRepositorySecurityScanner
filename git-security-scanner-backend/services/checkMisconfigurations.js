@@ -16,7 +16,7 @@ const checkMisconfigurations = async (repoPath) => {
 
         // Case 1: Detecting debug=true in config files
         if (fileContents.includes('debug=true')) {
-            misconfigIssues.push(`Insecure debug setting found in ${file}`);
+            message = `Insecure debug setting found`;
         }
 
         // Case 2: Check for hardcoded credentials or API keys
@@ -24,26 +24,32 @@ const checkMisconfigurations = async (repoPath) => {
             fileContents.includes('AWS_ACCESS_KEY_ID') ||
             fileContents.includes('DATABASE_PASSWORD') ||
             fileContents.includes('SECRET_KEY')) {
-            misconfigIssues.push(`Hardcoded credentials found in ${file}`);
+            message = `Hardcoded credentials found`;
         }
 
         // Case 3: Detecting exposed ports (such as a default port like 80 or 8080 in settings)
         if (fileContents.includes('port=80') || fileContents.includes('port=8080')) {
-            misconfigIssues.push(`Exposed port (80 or 8080) found in ${file}`);
+            message = `Exposed port (80 or 8080) found`;
         }
 
         // Case 4: Checking for dangerous flags or unsafe settings (e.g., allow_insecure=true)
         if (fileContents.includes('allow_insecure=true')) {
-            misconfigIssues.push(`Insecure flag (allow_insecure=true) found in ${file}`);
+            message = `Insecure flag (allow_insecure=true)`;
         }
 
         // Case 5: Permissions check for configuration files (e.g., `.env` or `.git`)
         if (file.includes('.env') || file.includes('.git')) {
             const stats = fs.statSync(filePath);
             if (stats.mode & 0o022) {  // Check if the file has public write permissions
-                misconfigIssues.push(`Insecure permissions found on ${file}`);
+                message = `Insecure permissions found`;
             }
         }
+
+        const misConfig = {
+            name: file,
+            message: message,
+        };
+        misconfigIssues.push(misConfig);
     }
     });
 
