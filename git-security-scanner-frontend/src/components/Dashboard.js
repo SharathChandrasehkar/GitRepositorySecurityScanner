@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
-import { Container, Row, Col, Card } from "react-bootstrap"; // Include any other necessary imports
+import { Button, Container, Spinner, Row, Col, Card } from "react-bootstrap"; // Include any other necessary imports
+import { jsPDF } from "jspdf";
+import html2canvas from 'html2canvas';
 import 'jspdf-autotable';
 import { FaExclamationTriangle, FaExclamationCircle, FaLock, FaFileAlt } from 'react-icons/fa'; // FontAwesome icons
 
@@ -25,31 +27,205 @@ const SeverityBox = ({ title, count, icon, bgColor }) => (
   </div>
 );
 
-function Dashboard({ scanResults, dashboardChartsRef }) {
-  const [loading] = useState(false);
-
-  useEffect(() => {
-    if (dashboardChartsRef.current) {
-      console.log('Dashboard charts ref:', dashboardChartsRef.current);
-    }
-  }, [dashboardChartsRef]);
+function Dashboard({ scanResults }) {
+  const [loading, setLoading] = useState(false);
+  const dashboardRef = useRef(null); // Create a ref to capture the charts container
 
   if (!scanResults) {
     return <div>No scan results available.</div>; // Display a message if there are no scan results
   }
+
+
+
+  // Download PDF function
+  const generatePDF = () => {
+    setLoading(true); // Set loading to true when the download starts
+    const doc = new jsPDF();
+    
+    // Add Title to PDF
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold'); // Make the title bold
+    doc.text('Git Repository Security Scanner Report', 14, 16);
+    
+    // Add Scan Summary (Secrets, Misconfigurations, etc.)
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold'); // Make the title bold
+    doc.text('Scan Summary:', 14, 30);
+    
+    const scanSummary = `
+        - Secrets: ${scanResults.secrets?.length || 0}
+        - Misconfigurations: ${scanResults.misconfigurations?.length || 0}
+        - Vulnerabilities: ${scanResults.vulnerabilities?.length || 0}
+        - Unwanted Files: ${scanResults.unwantedFiles?.length || 0}
+    `;
+    doc.setFont('helvetica', 'normal'); // Make the title bold
+    doc.text(scanSummary, 14, 30); // Add the scan summary text
+    
+    // Capture the chart and add to PDF
+    const captureChart = async () => {
+      const dashboardElement = dashboardRef.current;
+
+      console.log("dashboardElement --",dashboardElement);
+  
+      if (dashboardElement) {
+        const dashboardCanvas = await html2canvas(dashboardElement);
+    
+        // Add the chart image to the PDF
+        doc.addImage(dashboardCanvas.toDataURL('image/png'), 'PNG', 14, 60, 180, 100); // Adjust coordinates and size
+        
+        // Set initial starting Y position for the tables
+        let startY = 200; // Initial start Y position for the first table
+    
+        // Function to check if we need a page break
+        const checkPageBreak = (doc, startY, height) => {
+            const pageHeight = doc.internal.pageSize.height;
+            if (startY + height > pageHeight) {
+            doc.addPage();
+            return 10; // Start a little below the top of the new page
+            }
+            return startY;
+        };
+    
+        // Add Secrets Table
+        if (scanResults.secrets?.length > 0) {
+            let currentY = startY;
+            const tableHeight = scanResults.secrets.length * 10; // Estimate height per row
+    
+            // Check for page break
+            currentY = checkPageBreak(doc, currentY, tableHeight);
+    
+            doc.autoTable({
+            head: [['#', 'Secret']],
+            body: scanResults.secrets.map((secret, index) => [index + 1, secret]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+                doc.setFont('helvetica', 'bold'); // Make the title bold
+                doc.text('Secrets Found:', 14, currentY - 5);
+            },
+            });
+    
+            // Update startY after the secrets table
+            startY = doc.lastAutoTable.finalY + 10;
+        }
+    
+        // Add Misconfigurations Table
+        if (scanResults.misconfigurations?.length > 0) {
+            let currentY = startY;
+            const tableHeight = scanResults.misconfigurations.length * 10; // Estimate height per row
+    
+            // Check for page break
+            currentY = checkPageBreak(doc, currentY, tableHeight);
+    
+            doc.autoTable({
+            head: [['#', 'Misconfiguration']],
+            body: scanResults.misconfigurations.map((misconfig, index) => [index + 1, misconfig]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+                doc.setFont('helvetica', 'bold'); // Make the title bold
+                doc.text('Misconfigurations Found:', 14, currentY - 5);
+            },
+            });
+    
+            // Update startY after the misconfigurations table
+            startY = doc.lastAutoTable.finalY + 10;
+        }
+    
+        // Add Vulnerabilities Table
+        if (scanResults.vulnerabilities?.length > 0) {
+            let currentY = startY;
+            const tableHeight = scanResults.vulnerabilities.length * 10; // Estimate height per row
+    
+            // Check for page break
+            currentY = checkPageBreak(doc, currentY, tableHeight);
+    
+            doc.autoTable({
+            head: [['#', 'Vulnerability', 'Severity', 'Affected Version', 'Fix Available', 'Resolution Guidance']],
+            body: scanResults.vulnerabilities.map((vuln, index) => [
+                index + 1,
+                vuln.name,
+                vuln.severity,
+                vuln.range,
+                vuln.fixAvailable ? 'Yes' : 'No',
+                vuln.resolutionGuidance,
+                vuln.blame || 'No Git Blame', // Add the Git Blame info
+            ]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+                doc.setFont('helvetica', 'bold'); // Make the title bold
+                doc.text('Vulnerabilities Found:', 14, currentY - 5);
+            },
+            });
+    
+            // Update startY after the vulnerabilities table
+            startY = doc.lastAutoTable.finalY + 10;
+        }
+    
+        // Add Unwanted Files Table
+        if (scanResults.unwantedFiles?.length > 0) {
+            let currentY = startY;
+            const tableHeight = scanResults.unwantedFiles.length * 10; // Estimate height per row
+    
+            // Check for page break
+            currentY = checkPageBreak(doc, currentY, tableHeight);
+    
+            doc.autoTable({
+            head: [['#', 'Unwanted File']],
+            body: scanResults.unwantedFiles.map((file, index) => [index + 1, file]),
+            startY: currentY,
+            theme: 'striped',
+            headStyles: { fillColor: [22, 160, 133] },
+            didDrawPage: function (data) {
+                doc.setFont('helvetica', 'bold'); // Make the title bold
+                doc.text('Unwanted Files Found:', 14, currentY - 5);
+            },
+            });
+    
+            // Update startY after the unwanted files table
+            startY = doc.lastAutoTable.finalY + 10;
+        }
+    
+        // Save the PDF
+        doc.save('security_scan_report.pdf');
+
+        // Set loading state to false after PDF generation is completed
+        setLoading(false);
+      }
+  };
+  
+  captureChart();
+  };
   
   return (
     
-    <Container className="mt-5">      
+    <Container className="mt-1">      
     
       {/* Display Scan Results */}
       {scanResults && !loading && (
         <>
-        <Row className="mt-3" ref={dashboardChartsRef}>
+        <Row className="mt-1">
+          <Col className="text-end">
+            <Button
+              onClick={generatePDF}
+              variant="primary"
+              className="mx-1" style={{ backgroundColor: '#3f51b5', color: 'white' , whiteSpace: 'nowrap'}}
+              disabled={loading || !scanResults}
+            >
+              {loading ? <Spinner animation="border" size="sm" /> : 'Export Dashboard Report'}
+            </Button>
+          </Col>
+        </Row>
+        
+        <Row className="mt-1" ref={dashboardRef}>
           <Col md={12}>
-          <Card className="mb-3" style={{ borderRadius: '10px', transition: 'all 0.3s ease' }}>
+          <Card className="mb-1" style={{ borderRadius: '10px', transition: 'all 0.3s ease' }}>
             <Card.Body>
-              <h5 className="fw-bold" style={{ fontSize: '1.25rem', color: '#212529' }}>Overview of Issues</h5>
+              <h5 className="mb-1" style={{ fontSize: '1.25rem', color: '#212529' }}>Overview of Issues</h5>
               <div className="row">
                 <SeverityBox
                   title={<span style={{ color: '#212529' }}>Vulnerabilities</span>}
@@ -77,15 +253,16 @@ function Dashboard({ scanResults, dashboardChartsRef }) {
                 />
               </div>
             </Card.Body>
+            {/* Button to generate PDF */}
           </Card>
           </Col>
         </Row>
 
 
         {/* Display Secrets */}
-        <Row className="mt-5" >
+        <Row className="mt-1" >
           <Col md={4}>
-          <Card className="mb-3">
+          <Card className="mb-1">
             <Card.Body>
               <h5>Secrets</h5>
               
@@ -115,7 +292,7 @@ function Dashboard({ scanResults, dashboardChartsRef }) {
 
           {/* Display Misconfigurations */}
           <Col md={4}>
-          <Card className="mb-3">
+          <Card className="mb-1">
             <Card.Body>
               <h5>Misconfigurations</h5>
               
@@ -146,7 +323,7 @@ function Dashboard({ scanResults, dashboardChartsRef }) {
           </Col>
           {/* Display Unwanted Files */}
           <Col md={4}>
-          <Card className="mb-3">
+          <Card className="mb-1">
             <Card.Body>
               <h5>Unwanted Files</h5>
               
@@ -178,9 +355,9 @@ function Dashboard({ scanResults, dashboardChartsRef }) {
         </Row>
 
         {/* Display Vulnerabilities */}
-        <Row className="mt-5" >
+        <Row className="mt-1" >
           <Col md={12}>
-          <Card className="mb-3">
+          <Card className="mb-1">
             <Card.Body>
               <h5>Vulnerabilities</h5>
               
