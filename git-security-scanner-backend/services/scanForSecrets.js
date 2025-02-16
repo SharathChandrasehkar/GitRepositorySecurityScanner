@@ -20,19 +20,9 @@ const scanForSecrets = async (clonePath) => {
         } else if (stats.isFile()) {
           const fileContent = fs.readFileSync(fullPath, 'utf8');
           if (secretKeysPattern.test(fileContent)) {
-            const matchedSecretKeys = fileContent.match(secretKeysPattern);
-            let blameInfo = '';
-            const uniqueSecretKeys = [...new Set(matchedSecretKeys)];
-            uniqueSecretKeys.forEach(async (key, index) => {
-                console.log(`${index + 1}. ${key}`);
-                const keyFound = `${key}`;
-                blameInfo = `${blameInfo}` + `${index + 1}.` + await getGitBlame(currentDir, item, keyFound);
-                console.log('blameInfo --',blameInfo);
-            });
             const secrets = {
                 name: item,
-                fullPath: fullPath,
-                blame: blameInfo,
+                fullPath: fullPath.replace(/\\tmp\\/g, ''),
             };
             secretDataFound.push(secrets);
           }
