@@ -88,106 +88,106 @@ function Dashboard({ scanResults }) {
     
         // Add Secrets Table
         if (scanResults.secrets?.length > 0) {
-            let currentY = startY;
-            const tableHeight = scanResults.secrets.length * 10; // Estimate height per row
-    
-            // Check for page break
-            currentY = checkPageBreak(doc, currentY, tableHeight);
-    
-            doc.autoTable({
-            head: [['#', 'Secret']],
-            body: scanResults.secrets.map((secret, index) => [index + 1, secret.name]),
-            startY: currentY,
-            theme: 'striped',
-            headStyles: { fillColor: [22, 160, 133] },
-            didDrawPage: function (data) {
-                doc.setFont('helvetica', 'bold'); // Make the title bold
-                doc.text('Secrets Found:', 14, currentY - 5);
-            },
-            });
-    
-            // Update startY after the secrets table
-            startY = doc.lastAutoTable.finalY + 10;
+          let currentY = startY;
+          const tableHeight = scanResults.secrets.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+          head: [['#', 'File Name', 'File Path']],
+          body: scanResults.secrets.map((secret, index) => [index + 1, secret.name, secret.fullPath]),
+          startY: currentY,
+          theme: 'striped',
+          headStyles: { fillColor: [22, 160, 133] },
+          didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Secrets Found:', 14, currentY - 5);
+          },
+          });
+  
+          // Update startY after the secrets table
+          startY = doc.lastAutoTable.finalY + 10;
         }
     
         // Add Misconfigurations Table
         if (scanResults.misconfigurations?.length > 0) {
-            let currentY = startY;
-            const tableHeight = scanResults.misconfigurations.length * 10; // Estimate height per row
-    
-            // Check for page break
-            currentY = checkPageBreak(doc, currentY, tableHeight);
-    
-            doc.autoTable({
-            head: [['#', 'Misconfiguration']],
-            body: scanResults.misconfigurations.map((misconfig, index) => [index + 1, misconfig]),
-            startY: currentY,
-            theme: 'striped',
-            headStyles: { fillColor: [22, 160, 133] },
-            didDrawPage: function (data) {
-                doc.setFont('helvetica', 'bold'); // Make the title bold
-                doc.text('Misconfigurations Found:', 14, currentY - 5);
-            },
-            });
-    
-            // Update startY after the misconfigurations table
-            startY = doc.lastAutoTable.finalY + 10;
+          let currentY = startY;
+          const tableHeight = scanResults.misconfigurations.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+          head: [['#', 'Issue Found', 'File Name']],
+          body: scanResults.misconfigurations.map((misconfig, index) => [index + 1, misconfig.message, misconfig.name]),
+          startY: currentY,
+          theme: 'striped',
+          headStyles: { fillColor: [22, 160, 133] },
+          didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Misconfigurations Found:', 14, currentY - 5);
+          },
+          });
+  
+          // Update startY after the misconfigurations table
+          startY = doc.lastAutoTable.finalY + 10;
+        }
+
+        // Add Unwanted Files Table
+        if (scanResults.unwantedFiles?.length > 0) {
+          let currentY = startY;
+          const tableHeight = scanResults.unwantedFiles.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+          head: [['#', 'Unwanted File']],
+          body: scanResults.unwantedFiles.map((unwantedFile, index) => [index + 1, unwantedFile.name, unwantedFile.fullPath]),
+          startY: currentY,
+          theme: 'striped',
+          headStyles: { fillColor: [22, 160, 133] },
+          didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Unwanted Files Found:', 14, currentY - 5);
+          },
+          });
+  
+          // Update startY after the unwanted files table
+          startY = doc.lastAutoTable.finalY + 10;
         }
     
         // Add Vulnerabilities Table
         if (scanResults.vulnerabilities?.length > 0) {
-            let currentY = startY;
-            const tableHeight = scanResults.vulnerabilities.length * 10; // Estimate height per row
-    
-            // Check for page break
-            currentY = checkPageBreak(doc, currentY, tableHeight);
-    
-            doc.autoTable({
-            head: [['#', 'Vulnerability', 'Severity', 'Affected Version', 'Fix Available', 'Resolution Guidance']],
-            body: scanResults.vulnerabilities.map((vuln, index) => [
-                index + 1,
-                vuln.name,
-                vuln.severity,
-                vuln.range,
-                vuln.fixAvailable ? 'Yes' : 'No',
-                vuln.resolutionGuidance,
-                vuln.blame || 'No Git Blame', // Add the Git Blame info
-            ]),
-            startY: currentY,
-            theme: 'striped',
-            headStyles: { fillColor: [22, 160, 133] },
-            didDrawPage: function (data) {
-                doc.setFont('helvetica', 'bold'); // Make the title bold
-                doc.text('Vulnerabilities Found:', 14, currentY - 5);
-            },
-            });
-    
-            // Update startY after the vulnerabilities table
-            startY = doc.lastAutoTable.finalY + 10;
-        }
-    
-        // Add Unwanted Files Table
-        if (scanResults.unwantedFiles?.length > 0) {
-            let currentY = startY;
-            const tableHeight = scanResults.unwantedFiles.length * 10; // Estimate height per row
-    
-            // Check for page break
-            currentY = checkPageBreak(doc, currentY, tableHeight);
-    
-            doc.autoTable({
-            head: [['#', 'Unwanted File']],
-            body: scanResults.unwantedFiles.map((file, index) => [index + 1, file]),
-            startY: currentY,
-            theme: 'striped',
-            headStyles: { fillColor: [22, 160, 133] },
-            didDrawPage: function (data) {
-                doc.setFont('helvetica', 'bold'); // Make the title bold
-                doc.text('Unwanted Files Found:', 14, currentY - 5);
-            },
-            });
-    
-            // Update startY after the unwanted files table
-            startY = doc.lastAutoTable.finalY + 10;
+          let currentY = startY;
+          const tableHeight = scanResults.vulnerabilities.length * 10; // Estimate height per row
+  
+          // Check for page break
+          currentY = checkPageBreak(doc, currentY, tableHeight);
+  
+          doc.autoTable({
+          head: [['#', 'Vulnerability', 'Severity', 'Affected Version', 'Fix Available', 'Resolution Guidance', 'Commit History']],
+          body: scanResults.vulnerabilities.map((vuln, index) => [
+              index + 1,
+              vuln.name,
+              vuln.severity,
+              vuln.range,
+              vuln.fixAvailable ? 'Yes' : 'No',
+              vuln.resolutionGuidance,
+              vuln.blame || 'No Git Blame', // Add the Git Blame info
+          ]),
+          startY: currentY,
+          theme: 'striped',
+          headStyles: { fillColor: [22, 160, 133] },
+          didDrawPage: function (data) {
+              doc.setFont('helvetica', 'bold'); // Make the title bold
+              doc.text('Vulnerabilities Found:', 14, currentY - 5);
+          },
+          });
+  
+          // Update startY after the vulnerabilities table
+          startY = doc.lastAutoTable.finalY + 10;
         }
     
         // Save the PDF
@@ -196,7 +196,7 @@ function Dashboard({ scanResults }) {
         // Set loading state to false after PDF generation is completed
         setLoading(false);
       }
-  };
+    };
   
   captureChart();
   };
