@@ -31,11 +31,16 @@ const scanDirectoryForUnwantedFiles = async (dirPath) => {
       const stat = await fs.promises.stat(fullPath);
 
       if (unwantedPatterns.some(pattern => fullPath.includes(pattern))) {
-        unwantedFiles.fullPath = fullPath;
         //const filePath = path.dirname(fullPath);
         //const fileName = path.basename(fullPath);    
         //const blameInfo = await getGitBlame(filePath, fileName, pattern);
         //unwantedFiles.blame = blameInfo;
+
+        const unwantedFile = {
+          name: file,
+          fullPath: fullPath.replace(/\\tmp\\/g, ''),
+        };
+        unwantedFiles.push(unwantedFile);
       }
 
       if (stat.isDirectory()) {
