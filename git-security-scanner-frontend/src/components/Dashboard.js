@@ -417,13 +417,29 @@ function Dashboard({ scanResults }) {
                             className={`btn ${vuln.severity === 'high' ? 'btn-danger' : 
                                       vuln.severity === 'moderate' ? 'btn-warning' : 
                                       'btn-secondary'}`}
-                            style={{ padding: '5px 15px' }}
+                            style={{ padding: '5px 15px', opacity: 0.5 }}
                           >
                             {vuln.severity}
                           </button>
                         </td>
-                        <td>{vuln.range}</td>
-                        <td>{vuln.fixAvailable ? 'Yes' : 'No'}</td>
+                         {/* Range as a light transparent grey button */}
+                        <td>
+                          <button
+                            className="btn btn-secondary"
+                            style={{ padding: '5px 15px', opacity: 0.5 }}
+                          >
+                            {vuln.range}
+                          </button>
+                        </td>
+                        {/* Fix Available as light transparent green or red button */}
+                        <td>
+                          <button
+                            className={`btn ${vuln.fixAvailable ? 'btn-success' : 'btn-danger'}`}
+                            style={{ padding: '5px 15px', opacity: 0.5 }}
+                          >
+                            {vuln.fixAvailable ? 'Yes' : 'No'}
+                          </button>
+                        </td>
                         <td>{vuln.resolutionGuidance}</td>
                         <td>{vuln.blame ? vuln.blame : 'No Git Blame available for this vulnerability.'}</td>                    
                       </tr>
