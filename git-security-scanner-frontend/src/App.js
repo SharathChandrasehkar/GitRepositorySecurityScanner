@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
@@ -22,6 +22,7 @@ const App = () => {
         
           {/* Routes for Dashboard and Analytics */}
           <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" />} /> {/* Default route */}
             <Route path="/dashboard" element={<Dashboard scanResults={scanResults} />} />
             <Route path="/analytics" element={<Analytics scanResults={scanResults} />} />
           </Routes>

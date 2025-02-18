@@ -1,0 +1,55 @@
+<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+    <!-- Main Circle with Gradient -->
+    <defs>
+        <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#2D3436;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    
+    <!-- Main Background -->
+    <circle cx="100" cy="100" r="80" fill="url(#mainGradient)"/>
+    
+    <!-- Shield -->
+    <path d="M 100 50 
+             L 140 70
+             C 140 70, 145 140, 100 160
+             C 100 160, 55 140, 60 70 Z" 
+          fill="white" 
+          opacity="0.9"/>
+    
+    <!-- Git Branch Symbol -->
+    <path d="M 80 90 L 120 90 L 120 120" 
+          stroke="#E84E31" 
+          stroke-width="8" 
+          fill="none"/>
+          
+    <!-- Git Nodes -->
+    <circle cx="80" cy="90" r="8" fill="#E84E31"/>
+    <circle cx="120" cy="90" r="8" fill="#E84E31"/>
+    <circle cx="120" cy="120" r="8" fill="#E84E31"/>
+    
+    <!-- Scanning Lines Animation -->
+    <g opacity="0.6">
+        <line x1="65" y1="70" x2="135" y2="70" 
+              stroke="white" 
+              stroke-width="2">
+            <animate attributeName="y1" 
+                     values="70;140;70" 
+                     dur="2s" 
+                     repeatCount="indefinite"/>
+            <animate attributeName="y2" 
+                     values="70;140;70" 
+                     dur="2s" 
+                     repeatCount="indefinite"/>
+        </line>
+    </g>
+    
+    <!-- Logo Text -->
+    <text x="100" y="220" 
+          font-family="Arial, sans-serif" 
+          font-size="16" 
+          font-weight="bold" 
+          text-anchor="middle" 
+          fill="#2D3436">Git Repository Security Scanner</text>
+</svg>

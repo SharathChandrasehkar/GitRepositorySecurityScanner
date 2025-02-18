@@ -52,7 +52,7 @@ function TopBar({ setScanResults }) {
           <Button
             onClick={handleScan}
             variant="primary"
-            className="mx-3" style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
+            className="mx-3" style={{ backgroundColor: '#3B68AD', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
             disabled={loading || !repoUrl}
           >
             {loading ? <Spinner animation="border" size="sm" /> : 'Scan Repo'}
