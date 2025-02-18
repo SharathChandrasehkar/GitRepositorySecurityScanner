@@ -1,0 +1,47 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="100" cy="100" r="90" fill="#f5f5f5"/>
+    
+    <!-- Pie Slices -->
+    <!-- Large Blue Slice -->
+    <path d="M 100 100 
+             L 100 10 
+             A 90 90 0 0 1 190 100 
+             Z" 
+          fill="#4A90E2"/>
+    
+    <!-- Medium Purple Slice -->
+    <path d="M 100 100 
+             L 190 100 
+             A 90 90 0 0 1 100 190 
+             Z" 
+          fill="#9B51E0"/>
+    
+    <!-- Small Orange Slice -->
+    <path d="M 100 100 
+             L 100 190 
+             A 90 90 0 0 1 20 130 
+             Z" 
+          fill="#F2994A"/>
+    
+    <!-- Smallest Green Slice -->
+    <path d="M 100 100 
+             L 20 130 
+             A 90 90 0 0 1 100 10 
+             Z" 
+          fill="#27AE60"/>
+    
+    <!-- Center Circle for 3D effect -->
+    <circle cx="100" cy="100" r="3" fill="#333"/>
+    
+    <!-- Hover Animation -->
+    <style>
+        path {
+            transition: transform 0.2s;
+            transform-origin: center;
+        }
+        path:hover {
+            transform: translateX(5px) translateY(-5px);
+        }
+    </style>
+</svg>

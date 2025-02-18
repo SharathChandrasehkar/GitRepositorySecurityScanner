@@ -27,12 +27,48 @@ const SeverityBox = ({ title, count, icon, bgColor }) => (
   </div>
 );
 
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-start', // Align content to the top
+  height: '100vh', // Make the container take full height of the viewport
+};
+
+const messageContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center', // Center the content horizontally
+  height: '33.33%', // Take up the top third of the page
+  textAlign: 'center',
+  padding: '20px',
+  backgroundColor: 'white', // Optional: Background color for visibility
+};
+
+const headingStyle = {
+  fontWeight: 'bold', // Makes the heading bold
+  color: '#3B68AD'
+};
+
+const paragraphStyle = {
+  fontWeight: 'bold', // Makes the paragraph bold
+  color: 'grey'
+};
+
 function Dashboard({ scanResults }) {
   const [loading, setLoading] = useState(false);
   const dashboardRef = useRef(null); // Create a ref to capture the charts container
 
   if (!scanResults) {
-    return <div>No scan results available.</div>; // Display a message if there are no scan results
+    return (
+      <div style={containerStyle}>
+        <div style={messageContainerStyle}>
+          <h1 style={headingStyle}>Welcome to Git Repository Security Scanner</h1>
+          <p style={paragraphStyle}>Enter Github URL to generate report!</p>
+        </div>
+        {/* The rest of your content will go below */}
+      </div>
+    );
   }
 
 
@@ -213,7 +249,7 @@ function Dashboard({ scanResults }) {
             <Button
               onClick={generatePDF}
               variant="primary"
-              className="mx-1" style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
+              className="mx-1" style={{ backgroundColor: '#3B68AD', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
               disabled={loading || !scanResults}
             >
               {loading ? <Spinner animation="border" size="sm" /> : 'Export Dashboard Report'}
@@ -230,25 +266,25 @@ function Dashboard({ scanResults }) {
                 <SeverityBox
                   title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Vulnerabilities</span>}
                   count={scanResults.vulnerabilities?.length}
-                  icon={<FaExclamationTriangle style={{ color: 'rgba(245, 12, 8, 0.56)', fontFamily: 'Futura, sans-serif'}} />}
+                  icon={<FaExclamationTriangle style={{ color: '#C00000', fontFamily: 'Futura, sans-serif'}} />}
                   bgColor="rgba(255, 88, 85, 0.56)"
                 />
                 <SeverityBox
                   title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Misconfigurations</span>}
                   count={scanResults.misconfigurations?.length}
-                  icon={<FaExclamationCircle style={{ color: 'rgba(246, 194, 6, 0.88)', fontFamily: 'Futura, sans-serif' }} />}
+                  icon={<FaExclamationCircle style={{ color: '#E97132', fontFamily: 'Futura, sans-serif' }} />}
                   bgColor="rgba(255, 213, 61, 0.57)"
                 />
                 <SeverityBox
                   title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Unwanted Files</span>}
                   count={scanResults.unwantedFiles?.length}
-                  icon={<FaFileAlt style={{ color: 'rgb(10, 128, 247)', fontFamily: 'Futura, sans-serif' }} />} 
+                  icon={<FaFileAlt style={{ color: '#0070C0', fontFamily: 'Futura, sans-serif' }} />} 
                   bgColor="rgba(40, 190, 210, 0.53)"
                 />
                 <SeverityBox
                   title={<span style={{ color: '#212529', fontFamily: 'Futura, sans-serif' }}>Secrets</span>} 
                   count={scanResults.secrets?.length}
-                  icon={<FaLock style={{ color: 'rgba(17, 245, 9, 0.98)', fontFamily: 'Futura, sans-serif' }} />}
+                  icon={<FaLock style={{ color: '#196B24', fontFamily: 'Futura, sans-serif' }} />}
                   bgColor="rgba(50, 210, 90, 0.53)"
                 />
               </div>
@@ -270,9 +306,9 @@ function Dashboard({ scanResults }) {
                 <table className="table table-striped">
                   <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' }}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' }}>File Name</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' }}>File Path</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' }}>#</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' }}>File Name</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' }}>File Path</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -300,9 +336,9 @@ function Dashboard({ scanResults }) {
                 <table className="table table-striped">
                   <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Issue Found</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Name</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Issue Found</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Name</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -329,9 +365,9 @@ function Dashboard({ scanResults }) {
                 <table className="table table-striped">
                   <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Name</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Path</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Name</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>File Path</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -361,13 +397,13 @@ function Dashboard({ scanResults }) {
                 <table className="table table-striped">
                   <thead style={{ position: 'sticky', top: 0, zIndex: 1, wrappable:false, backgroundColor: '#212529', color: 'blue', fontFamily: 'Futura, sans-serif'}}>
                     <tr>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Vulnerability</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Severity</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Affected Version Range</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Fix Available</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
-                      <th style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Commit History</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>#</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Vulnerability</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Severity</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Affected Version Range</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Fix Available</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Resolution Guidance</th>
+                      <th style={{ backgroundColor: '#3B68AD', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}>Commit History</th>
                     </tr>
                   </thead>
                   <tbody>

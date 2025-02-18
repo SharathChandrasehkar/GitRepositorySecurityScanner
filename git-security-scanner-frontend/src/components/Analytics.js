@@ -235,7 +235,7 @@ function Analytics({ scanResults }) {
             <Button
               onClick={generatePDF}
               variant="primary"
-              className="mx-1" style={{ backgroundColor: '#3f51b5', color: 'white', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
+              className="mx-1" style={{ backgroundColor: '#3B68AD', fontFamily: 'Futura, sans-serif' , whiteSpace: 'nowrap'}}
               disabled={loading || !scanResults}
             >
               {loading ? <Spinner animation="border" size="sm" /> : 'Export Analytics Report'}
