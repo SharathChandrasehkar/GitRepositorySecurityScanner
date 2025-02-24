@@ -53,7 +53,7 @@ const gatherResults = async (cpath) => {
   for (let vuln of vulnerabilities) {
     try {
       const blameInfo = await getGitBlame(cpath, 'package-lock.json', vuln.name); // Assume each vulnerability has filePath
-      console.log('blameInfo -----',blameInfo);
+      //console.log('blameInfo -----',blameInfo);
       vuln.blame = blameInfo; // Store blame info in the vulnerability object
     } catch (error) {
       vuln.blame = `Error retrieving blame info: ${error.message}`;

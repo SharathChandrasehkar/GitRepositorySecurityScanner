@@ -55,8 +55,40 @@ const paragraphStyle = {
   color: 'grey'
 };
 
+const unwantedPatterns = [
+  '.env',
+  '.git/',
+  '.log',
+  'node_modules/',
+  '.vscode/',
+  '.idea/',
+  '.DS_Store',
+  'Thumbs.db',
+  '*.bak',
+  '*.swp',
+  '*.sqlite3',
+  '*.db',
+  'dist/',
+  'build/'
+];
+
+const misconfigPattern = [
+  'debug=true',
+  'password',
+  'AWS_ACCESS_KEY_ID',
+  'DATABASE_PASSWORD',
+  'SECRET_KEY',
+  'port=80',
+  'allow_insecure=true',
+  '.env & .git files with Insecure permissions'
+];
+
 function Dashboard({ scanResults }) {
   const [loading, setLoading] = useState(false);
+  // State to control visibility of the note section
+  const [showNoteMisConfig, setShowNoteMisConfig] = useState(false);
+  const [showNoteSecrets, setShowNoteSecrets] = useState(false);
+  const [showNoteUnwantedFiles, setShowNoteUnwantedFiles] = useState(false);
   const dashboardRef = useRef(null); // Create a ref to capture the charts container
 
   if (!scanResults) {
@@ -71,7 +103,16 @@ function Dashboard({ scanResults }) {
     );
   }
 
-
+  // Function to toggle the visibility
+  const toggleNoteMisConfig = () => {
+    setShowNoteMisConfig(!showNoteMisConfig);
+  };
+  const toggleNoteSecrets = () => {
+    setShowNoteSecrets(!showNoteSecrets);
+  };
+  const toggleNoteUnwantedFiles = () => {
+    setShowNoteUnwantedFiles(!showNoteUnwantedFiles);
+  };
 
   // Download PDF function
   const generatePDF = () => {
@@ -301,7 +342,21 @@ function Dashboard({ scanResults }) {
           <Card className="mb-1">
             <Card.Body>
               <h5 style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Secrets</h5>
-              
+              {/* Button to toggle visibility of the note */}
+              <button
+                className="btn btn-link p-0 mt-2"
+                style={{ fontSize: '0.9rem', color: '#3B68AD', textDecoration: 'underline' }}
+                onClick={toggleNoteSecrets}
+              >
+                {showNoteSecrets ? 'Hide Note' : 'Show Note'}
+              </button>
+
+              {/* Conditionally render the note section */}
+              {showNoteSecrets && (
+                <small className="text-muted d-block mt-2">
+                  One of these secrets are exposed: API_KEY|SECRET_KEY|PASSWORD|TOKEN in these files
+                </small>
+              )}
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
                   <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
@@ -331,7 +386,22 @@ function Dashboard({ scanResults }) {
           <Card className="mb-1">
             <Card.Body>
               <h5 style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Misconfigurations</h5>
-              
+              {/* Button to toggle visibility of the note */}
+              <button
+                className="btn btn-link p-0 mt-2"
+                style={{ fontSize: '0.9rem', color: '#3B68AD', textDecoration: 'underline' }}
+                onClick={toggleNoteMisConfig}
+              >
+                {showNoteMisConfig ? 'Hide Note' : 'Show Note'}
+              </button>
+
+              {/* Conditionally render the note section */}
+              {showNoteMisConfig && (
+                <small className="text-muted d-block mt-2">
+                  Note: Misconfigurations found in '.env', 'config.json', 'settings.yml': 
+                  {misconfigPattern && misconfigPattern.length > 0 ? misconfigPattern.join(', ') : "None"}
+                </small>
+              )}
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
                   <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
@@ -360,7 +430,22 @@ function Dashboard({ scanResults }) {
           <Card className="mb-1">
             <Card.Body>
               <h5 style={{ fontSize: '1.25rem', color: '#212529', fontFamily: 'Futura, sans-serif' }}>Unwanted Files</h5>
-              
+              {/* Button to toggle visibility of the note */}
+              <button
+                className="btn btn-link p-0 mt-2"
+                style={{ fontSize: '0.9rem', color: '#3B68AD', textDecoration: 'underline' }}
+                onClick={toggleNoteUnwantedFiles}
+              >
+                {showNoteUnwantedFiles ? 'Hide Note' : 'Show Note'}
+              </button>
+
+              {/* Conditionally render the note section */}
+              {showNoteUnwantedFiles && (
+                <small className="text-muted d-block mt-2">
+                  Note: The application checks for files matching these patterns: 
+                  {unwantedPatterns.join(', ')}.
+                </small>
+              )}
               <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-striped">
                   <thead style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: '#212529',  color: 'white', fontFamily: 'Futura, sans-serif' }}>
