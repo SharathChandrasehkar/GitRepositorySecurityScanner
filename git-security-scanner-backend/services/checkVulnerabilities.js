@@ -8,7 +8,8 @@ const checkVulnerabilities = async (clonePath) => {
                 console.error('stderr:', stderr);
             }
             if (error && !stderr) {
-                console.log('npm audit completed with exit code 1. Continuing to parse output...', stdout);
+                //console.log('npm audit completed with exit code 1. Continuing to parse output...', stdout);
+                console.log('npm audit completed with exit code 1. Continuing to parse output...');
             }
             resolve(stdout);
             });

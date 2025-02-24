@@ -11,9 +11,13 @@ const checkMisconfigurations = async (repoPath) => {
     misconfigFiles.forEach((file) => {
     const filePath = path.join(repoPath, file);
 
+    console.log("filePath --",filePath);
+    console.log("fs.existsSync(filePath) --",fs.existsSync(filePath));
+
     if (fs.existsSync(filePath)) {
         const fileContents = fs.readFileSync(filePath, 'utf-8');
 
+        console.log("fileContents.includes('debug=true') --",fileContents.includes('debug=true'));
         // Case 1: Detecting debug=true in config files
         if (fileContents.includes('debug=true')) {
             message = `Insecure debug setting found`;
@@ -55,7 +59,7 @@ const checkMisconfigurations = async (repoPath) => {
 
     console.log("misconfigIssues --",misconfigIssues);
     for (let misconf of misconfigIssues) {
-        misconf.resolutionGuidance = getResolutionGuidance(misconf);
+        //misconf.resolutionGuidance = getResolutionGuidance(misconf);
         misconf.filepath = repoPath;
     }
     console.log("after misconfigIssues --",misconfigIssues);
