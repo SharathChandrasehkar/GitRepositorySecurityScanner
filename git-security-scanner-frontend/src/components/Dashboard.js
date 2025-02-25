@@ -39,7 +39,7 @@ const messageContainerStyle = {
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center', // Center the content horizontally
-  height: '33.33%', // Take up the top third of the page
+  height: '75%', // Take up the top third of the page
   textAlign: 'center',
   padding: '20px',
   backgroundColor: 'white', // Optional: Background color for visibility
@@ -97,6 +97,13 @@ function Dashboard({ scanResults }) {
         <div style={messageContainerStyle}>
           <h1 style={headingStyle}>Welcome to Git Repository Security Scanner</h1>
           <p style={paragraphStyle}>Enter Github URL to generate report!</p>
+          <p style={paragraphStyle}> This application is designed to help developers, project managers, and teams monitor and secure their Git repositories by scanning for potential security risks, misconfigurations, and sensitive data exposure. The app provides a dashboard displaying detailed security findings and recommendations for improving the safety of your repositories.</p>
+          <h3 style={headingStyle}>Key Features:</h3>
+          <p style={paragraphStyle}>1. Sensitive Data Exposure Detection: Scans for secrets like API keys, passwords, certificates, and other sensitive information that may have been exposed in the source code.</p>
+          <p style={paragraphStyle}>2. Misconfiguration Alerts: Identifies insecure settings within configuration files that could lead to security vulnerabilities.</p>
+          <p style={paragraphStyle}>3. Vulnerability Scanning: Checks for known vulnerabilities in your repository's dependencies and suggests fixes.</p>
+          <p style={paragraphStyle}>4. Git History Issues: Analyzes commit history to detect exposure of sensitive information that may have been included in past commits.</p>
+          <p style={paragraphStyle}>5. Unwanted Files/Directories Detection: Flags files or directories like .env, .log, or .git that should not be tracked or pushed to the repository.</p>
         </div>
         {/* The rest of your content will go below */}
       </div>
